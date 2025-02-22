@@ -1,0 +1,34 @@
+{
+    "name": "iqionly/laraddon",
+    "description": "Laravel with support addons features",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11",
+        "illuminate/routing": "^11",
+        "illuminate/container": "^11"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Iqionly\\Laraddon\\": "src/",
+            "Laraddon\\Attributes\\": "src/Attributes/"
+        },
+        "exclude-from-classmap": [
+            "vendor/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Iqionly"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Iqionly\\Laraddon\\LaraddonServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}
