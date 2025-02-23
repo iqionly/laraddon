@@ -6,13 +6,15 @@
         "php": "^8.2",
         "illuminate/support": "^11",
         "illuminate/routing": "^11",
-        "illuminate/container": "^11"
+        "illuminate/container": "^11",
+        "illuminate/database": "^11"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Iqionly\\Laraddon\\": "src/",
-            "Laraddon\\Attributes\\": "src/Attributes/"
+            "Laraddon\\Attributes\\": "src/Attributes/",
+            "Iqionly\\Laraddon\\Tests\\": "../tests"
         },
         "exclude-from-classmap": [
             "vendor/"

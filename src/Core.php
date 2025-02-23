@@ -4,9 +4,8 @@ namespace Iqionly\Laraddon;
 
 use Illuminate\Container\Container;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
-use ReflectionMethod;
 
 @include_once __DIR__ . '../vendor/autoload.php';
 
@@ -14,10 +13,8 @@ class Core
 {
     protected $base_path;
     protected $app;
-    protected \Illuminate\Routing\Router $router;
-    protected array $middlewareGroups = [];
 
-    protected $folders = [
+    protected array $folders = [
         'addons' => false,
     ];
 
@@ -27,8 +24,6 @@ class Core
     {
         $this->base_path = $app->get('app')->basePath();
         $this->app = $app;
-        $this->router = $app->get('router');
-        $this->middlewareGroups = array_keys($this->app->make(Kernel::class)->getMiddlewareGroups()); // P.S : This is not the best way to get middleware groups, so slow -__-
     }
 
     public function init()
@@ -84,70 +79,19 @@ class Core
         $loader->addClassMap($class_maps);
         unset($class_maps);
         $loader->register();
+
+        return $this->list_modules;
     }
 
-    public function registerRoutes() {
-        // 
-        // Example use addRoute
-        // 
-        // $this->router->addRoute('GET', 'test', [
-        //     'App\Http\Controllers\BasicController',
-        //     'index',
-        //     'prefix' => 'api'
-        // ])->middleware('web');
-        // dd($this->router->getRoutes());
-        // Get list all modules files
-        // This section we will register route from controllers, and put in cached route laravel
-        foreach ($this->list_modules as $value) {
-            $data = require $this->folders['addons'] . '/' . $value . '/init.php';
-            foreach ($data as $key => $item) {
-                if($key == 'controllers') {
-                    foreach ($item as $controller) {
-                        $reflect = new \ReflectionClass($controller);
-                        $this->extractRoute($value, $reflect);
-                    }
-                }
-            }
-        }
+    public static function getListModules() {
+        return App::get(self::class)->list_modules;
     }
 
-    private function camelToUnderscore($string, $us = "_") {
+    public static function getFolders() {
+        return App::get(self::class)->folders;
+    }
+
+    public static function camelToUnderscore($string, $us = "_") {
         return strtolower(preg_replace('/(?<!^)[A-Z]+|(?<!^|\d)[\d]+/', $us.'$0', $string));
-    }
-
-    private function extractRoute(string $name, \ReflectionClass $reflect) {
-        $methods = $reflect->getMethods(ReflectionMethod::IS_PUBLIC);
-        foreach ($methods as $method) {
-            $parameters = $method->getParameters();
-            $name_method = $method->getName();
-            $attributes = $method->getAttributes();
-            if(count($attributes) == 0) {
-                $attribute = [ 'get' => $method->getName()];
-            } else {
-                $attribute = isset($attributes[0]) ? $attributes[0]->getArguments() : null;
-            }
-            if(!$attribute) {
-                continue;
-            }
-            $method = array_key_first($attribute);
-            $uri = $attribute[$method];
-            
-            foreach ($this->middlewareGroups as $group) {
-                // Detect if projects using default middleware api, we will add prefix api
-                $result = [
-                    strtoupper($method),
-                    $this->camelToUnderscore($name, '-') . '/' . $uri,
-                    [$reflect->getName(), $uri]
-                ];
-                if($group == 'api') {
-                    // Add prefix in first, because if we use method prefix(), it will be added in uri also, and we don't want
-                    $result[2]['prefix'] = $group;
-                }
-                $route = $this->router->addRoute(...$result)->middleware($group);
-                $route_name = $group == 'api' ? 'api.' : '';
-                $route_name .= $this->camelToUnderscore($name, '-') . '.' . $this->camelToUnderscore($name_method, '-');
-                $route->name($route_name);
-            }
-        }
     }
 }
