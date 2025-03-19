@@ -6,6 +6,7 @@ use Illuminate\Container\Container;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
+use Iqionly\Laraddon\Addons\Base\Models\TestModel;
 
 @include_once __DIR__ . '../vendor/autoload.php';
 
@@ -57,8 +58,22 @@ class Core
         return true;
     }
 
-    private function loadModules() {
-        // Load all modules
+    public function getFoldersAddon() {
+        if(!empty($this->folders['addons'])) {
+            return $this->folders['addons'];
+        }
+
+        $this->init();
+
+        return $this->folders['addons'];
+    }
+
+    public function getListAvailableModules()
+    {
+        if(!empty($this->list_modules)) {
+            return $this->list_modules;
+        }
+
         $this->list_modules = array_diff(
             scandir($this->folders['addons'], SCANDIR_SORT_NONE),
             ['.', '..']
@@ -66,6 +81,14 @@ class Core
 
         $this->list_modules = array_values($this->list_modules);
 
+        return $this->list_modules;
+    }
+
+    private function loadModules() {
+        // Get list available module
+        $this->getListAvailableModules();
+
+        // Load all modules
         $loader = new ClassLoader($this->folders['addons']);
         $class_maps = [];
         foreach ($this->list_modules as $module) {
@@ -81,6 +104,11 @@ class Core
         $loader->register();
 
         return $this->list_modules;
+    }
+
+    public function testModelResolver()
+    {
+        $model = app(TestModel::class);
     }
 
     public static function getListModules() {

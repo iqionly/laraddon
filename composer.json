@@ -13,12 +13,19 @@
     "autoload": {
         "psr-4": {
             "Iqionly\\Laraddon\\": "src/",
-            "Laraddon\\Attributes\\": "src/Attributes/",
-            "Iqionly\\Laraddon\\Tests\\": "../tests"
+            "Laraddon\\Attributes\\": "src/Attributes/"
         },
         "exclude-from-classmap": [
-            "vendor/"
+            "tests/"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Iqionly\\Laraddon\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+        }
     },
     "authors": [
         {
@@ -32,5 +39,31 @@
             ]
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "version": "dev-main",
+    "require-dev": {
+        "orchestra/testbench": "9.*"
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "test-feature": [
+            "@composer exec phpunit -- --testsuite=feature --stop-on-failure"
+        ],
+        "test": [
+            "@clear",
+            "@php vendor/bin/phpunit"
+        ]
+    }
 }

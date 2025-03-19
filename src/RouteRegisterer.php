@@ -5,6 +5,8 @@ namespace Iqionly\Laraddon;
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Iqionly\Laraddon\Errors\InitFileNotFound;
+use Iqionly\Laraddon\Errors\InvalidModules;
 use ReflectionMethod;
 use ReflectionNamedType;
 
@@ -15,8 +17,11 @@ class RouteRegisterer
 
     protected bool $generate_api = false;
 
-    public function __construct(Container $app)
+    protected Core $core;
+
+    public function __construct(Container $app, Core $core)
     {
+        $this->core = $core;
         $config = $app->get('config');
         $this->generate_api = $config->get('laraddon.api_routes');
         $this->router = $app->get('router');
@@ -25,24 +30,56 @@ class RouteRegisterer
 
     public function init() {
         $this->registerRoutes();
+
+        return $this;
     }
 
     public function registerRoutes() {
         $list_modules = Core::getListModules();
         $folders = Core::getFolders();
-        // 
-        // Example use addRoute
-        // 
-        // $this->router->addRoute('GET', 'test', [
-        //     'App\Http\Controllers\BasicController',
-        //     'index',
-        //     'prefix' => 'api'
-        // ])->middleware('web');
-        // dd($this->router->getRoutes());
-        // Get list all modules files
-        // This section we will register route from controllers, and put in cached route laravel
+        // Get List Modules
         foreach ($list_modules as $value) {
-            $data = require $folders['addons'] . '/' . $value . '/init.php';
+            /**
+             * First thing first!
+             * the priority route generated from modules based on.
+             * 1. Views
+             *      Check if Views folder and all file exists, than register right away, based on addon name folder and file name.
+             *      ex: we have addon MyAddon in folder so the folder will suspect to be addons/MyAddon/Views/base.blade.php
+             *          and generated route will be localhost:8000/my-addon/base.
+             * 2. Controllers
+             *      Check if init file exists in modules folders.
+             *      So we can get all controllers and register it.
+             *      This base on the attributes first, if it not exists then method name.
+             * 3. Models
+             *      Check if Models folder exists, than we can get all models and register it.
+             */
+
+            /**
+             * Step 1.
+             */
+            $path = $folders['addons'] . '/' . $value . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+            if(is_dir($path)) {
+                $files = scandir($path);
+                foreach ($files as $file) {
+                    if($file == '.' || $file == '..') continue;
+                    $file = str_replace('.blade.php', '', $file);
+                    $route = $this->router->addRoute(Router::$verbs[0], Core::camelToUnderscore($value, '-') . '/' . Core::camelToUnderscore($file, '-'), function () use ($file) {
+                        return view(Core::camelToUnderscore($file, '-'));
+                    });
+                    $route->name(Core::camelToUnderscore($value, '-') . '.' . Core::camelToUnderscore($file, '-'));
+                }
+            } else {
+                throw new InvalidModules("Views folder not found in $value", 12001);
+            }
+
+            /**
+             * Step 2.
+             */
+            try {
+                $data = require $folders['addons'] . '/' . $value . '/init.php';
+            } catch (\ErrorException $e) {
+                throw new InitFileNotFound("Init.php file not found in $value", 12002);
+            }
             foreach ($data as $key => $item) {
                 if($key == 'controllers') {
                     foreach ($item as $controller) {
@@ -51,6 +88,11 @@ class RouteRegisterer
                     }
                 }
             }
+
+            /**
+             * Step 3.
+             */
+
         }
     }
 
