@@ -9,7 +9,6 @@ use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\View\ViewFinderInterface;
-use Iqionly\Laraddon\Addons\Base\Models\TestModel;
 use Iqionly\Laraddon\Interfaces\Migrations\Type;
 use Iqionly\Laraddon\Interfaces\ModelBlueprint;
 use Iqionly\Laraddon\Interfaces\ModelMigrate;
@@ -21,14 +20,23 @@ class LaraddonServiceProvider extends ServiceProvider
         \Iqionly\Laraddon\ViewRegisterer::class,
     ];
 
+    protected $addons_path = null;
+
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/../config/laraddon.php', 'laraddon');
+
+        if($this->app->runningUnitTests() && env('PHPUNIT_ADDONS_PATH') != null) {
+            $this->addons_path = realpath(__DIR__ . env('PHPUNIT_ADDONS_PATH'));
+            $this->app->get('config')->set('laraddon.addons_path', $this->addons_path);
+        } else {
+            $this->addons_path = $this->app->get('config')->get('laraddon.addons_path');
+        }
+
         $this->app->singleton(Core::class, function ($app) {
             return new Core($app);
         });
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/laraddon.php', 'laraddon');
-        
         $this->registerClasses();
     }
     
@@ -52,8 +60,6 @@ class LaraddonServiceProvider extends ServiceProvider
             $file_view_finder->addLocation(__DIR__ . '/addons/base/views');
             return $file_view_finder;
         });
-
-        $this->app->get(Core::class)->testModelResolver();
     }
 
     /**

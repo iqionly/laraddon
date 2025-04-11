@@ -16,6 +16,7 @@ final class RouteRegistererTest extends TestCase {
     {
         $this->afterApplicationCreated(function () {
             $this->route_registerer = $this->app->make(RouteRegisterer::class);
+            $this->route_registerer->init();
         });
 
         parent::setUp();
@@ -37,6 +38,8 @@ final class RouteRegistererTest extends TestCase {
     #[Depends('testRouteRegistererIsWorkingProperly')]
     public function testRouteTestGenerated(): void
     {
-        dd($this->app->get('router')->getRoutes());
+        $routes = $this->app->get('router')->getRoutes();
+        $this->assertTrue($routes->hasNamedRoute('example-addon.test-route-parameter.index'), 'Route with name example-addon.test-default-attribute is not generated.');
+        $this->assertTrue($routes->count() == 6, 'Route count is not 6. Maybe Examples Route is updated before.');
     }
 }

@@ -30,5 +30,6 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
+        <env name="PHPUNIT_ADDONS_PATH" value="/../examples"/>
     </php>
 </phpunit>

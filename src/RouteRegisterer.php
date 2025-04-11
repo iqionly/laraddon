@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Iqionly\Laraddon\Errors\InitFileNotFound;
 use Iqionly\Laraddon\Errors\InvalidModules;
+use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 
@@ -19,19 +20,41 @@ class RouteRegisterer
 
     protected Core $core;
 
+    protected array $excluded_routes = [];
+
     public function __construct(Container $app, Core $core)
     {
         $this->core = $core;
         $config = $app->get('config');
         $this->generate_api = $config->get('laraddon.api_routes');
         $this->router = $app->get('router');
-        $this->middleware_groups = array_keys($app->make(\Illuminate\Contracts\Http\Kernel::class)->getMiddlewareGroups()); // P.S : This is not the best way to get middleware groups, so slow -__-
+        $this->middleware_groups = array_keys($app->get(\Illuminate\Contracts\Http\Kernel::class)->getMiddlewareGroups()); // P.S : This is not the best way to get middleware groups, so slow -__-
+
+        $this->setExludedRoutes();
     }
 
     public function init() {
         $this->registerRoutes();
 
         return $this;
+    }
+
+    /**
+     * Sets the excluded routes by retrieving all public methods
+     * from the base Laravel Controller class and adding their names
+     * to the `$excluded_routes` property.
+     *
+     * This ensures that default Laravel controller methods are excluded
+     * from being registered as routes.
+     *
+     * @return void
+     */
+    public function setExludedRoutes() {
+        $laravelController = new ReflectionClass(\Illuminate\Routing\Controller::class);
+        $methods = $laravelController->getMethods(ReflectionMethod::IS_PUBLIC);
+        foreach ($methods as $method) {
+            $this->excluded_routes[] = $method->getName();
+        }
     }
 
     public function registerRoutes() {
@@ -122,8 +145,13 @@ class RouteRegisterer
                     return $val != 'api';
                 });
             }
+
+            // Exlude default routes abtract laravel controller 
+            $this->middleware_groups = array_filter($this->middleware_groups, function ($val) use ($name_method) {
+                return !in_array($name_method, $this->excluded_routes);
+            });
             
-            foreach ($this->middleware_groups as $group) {
+            foreach ($this->middleware_groups as $groupkey => $group) {
                 // Detect if projects using default middleware api, we will add prefix api
                 $result_method = strtoupper($method);
                 if($method == 'any') {
@@ -141,6 +169,7 @@ class RouteRegisterer
                 $route = $this->router->addRoute(...$result)->middleware($group);
                 $route_name = $group == 'api' ? 'api.' : '';
                 $route_name .= Core::camelToUnderscore($name, '-') . '.' . Core::camelToUnderscore($uri, '-');
+                $route_name = str_replace('/', '.', Core::removeParenthesis($route_name));
                 $route->name($route_name);
             }
         }

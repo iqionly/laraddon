@@ -1,6 +1,6 @@
 <?php
 
-namespace Iqionly\Laraddon\Tests\Addons\Test\Controllers;
+namespace Iqionly\Laraddon\ExampleAddon\Controllers;
 
 use Illuminate\Routing\Controller;
 use Laraddon\Attributes\Route;

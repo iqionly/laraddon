@@ -1,8 +1,8 @@
 <?php
 
-use Iqionly\Laraddon\Tests\Addons\Test\Controllers\AddonTestController;
-use Iqionly\Laraddon\Tests\Addons\Test\Models\AddonTestModel;
-use Iqionly\Laraddon\Tests\Addons\Test\Models\AddonTestRelationModel;
+use Iqionly\Laraddon\ExampleAddon\Controllers\AddonTestController;
+use Iqionly\Laraddon\ExampleAddon\Models\AddonTestModel;
+use Iqionly\Laraddon\ExampleAddon\Models\AddonTestRelationModel;
 
 return [
     'controllers' => [

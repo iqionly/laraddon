@@ -21,6 +21,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Iqionly\\Laraddon\\ExampleAddon\\": "examples/ExampleAddon/",
             "Iqionly\\Laraddon\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
@@ -36,6 +37,9 @@
         "laravel": {
             "providers": [
                 "Iqionly\\Laraddon\\LaraddonServiceProvider"
+            ],
+            "dont-discover": [
+                "*"
             ]
         }
     },
