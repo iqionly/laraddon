@@ -57,7 +57,6 @@ class LaraddonServiceProvider extends ServiceProvider
             foreach ($registerer->listPathViewModules() as $key => $value) {
                 $file_view_finder->addLocation($value);
             }
-            $file_view_finder->addLocation(__DIR__ . '/addons/base/views');
             return $file_view_finder;
         });
     }
