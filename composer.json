@@ -14,10 +14,7 @@
         "psr-4": {
             "Iqionly\\Laraddon\\": "src/",
             "Laraddon\\Attributes\\": "src/Attributes/"
-        },
-        "exclude-from-classmap": [
-            "tests/"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
@@ -62,12 +59,9 @@
             "@build",
             "@php vendor/bin/testbench serve --ansi"
         ],
-        "test-feature": [
-            "@composer exec phpunit -- --testsuite=feature --stop-on-failure"
-        ],
         "test": [
             "@clear",
-            "@php vendor/bin/phpunit"
+            "@php vendor/bin/testbench package:test"
         ]
     }
 }
