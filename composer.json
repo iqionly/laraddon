@@ -1,13 +1,10 @@
 {
     "name": "iqionly/laraddon",
     "description": "Laravel with support addons features",
-    "type": "library",
+    "type": "composer-plugin",
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^11",
-        "illuminate/routing": "^11",
-        "illuminate/container": "^11",
-        "illuminate/database": "^11"
+        "composer-plugin-api": "*"
     },
     "license": "MIT",
     "autoload": {
@@ -19,10 +16,7 @@
     "autoload-dev": {
         "psr-4": {
             "Iqionly\\Laraddon\\ExampleAddon\\": "examples/ExampleAddon/",
-            "Iqionly\\Laraddon\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/",
-            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
-            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+            "Iqionly\\Laraddon\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -38,30 +32,17 @@
             "dont-discover": [
                 "*"
             ]
-        }
+        },
+        "class": "Iqionly\\Laraddon\\Plugin"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "version": "dev-main",
     "require-dev": {
-        "orchestra/testbench": "9.*"
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "@clear",
-            "@prepare"
-        ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-        "prepare": "@php vendor/bin/testbench package:discover --ansi",
-        "build": "@php vendor/bin/testbench workbench:build --ansi",
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "@php vendor/bin/testbench serve --ansi"
-        ],
-        "test": [
-            "@clear",
-            "@php vendor/bin/testbench package:test"
-        ]
+        "illuminate/support": "^11.45",
+        "illuminate/routing": "^11.45",
+        "illuminate/container": "^11.45",
+        "illuminate/database": "^11.45",
+        "illuminate/view": "^11.45"
     }
 }
