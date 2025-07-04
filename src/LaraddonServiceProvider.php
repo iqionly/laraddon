@@ -2,22 +2,16 @@
 
 namespace Iqionly\Laraddon;
 
-use Illuminate\Container\Container as ContainerContainer;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Support\DeferrableProvider;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Application;
 use Illuminate\View\ViewFinderInterface;
-use Iqionly\Laraddon\Interfaces\Migrations\Type;
-use Iqionly\Laraddon\Interfaces\ModelBlueprint;
-use Iqionly\Laraddon\Interfaces\ModelMigrate;
+use Iqionly\Laraddon\Registerer\ViewRegisterer;
 
 class LaraddonServiceProvider extends ServiceProvider
 {
     private array $classes = [
-        \Iqionly\Laraddon\RouteRegisterer::class,
-        \Iqionly\Laraddon\ViewRegisterer::class,
+        \Iqionly\Laraddon\Registerer\RouteRegisterer::class,
+        \Iqionly\Laraddon\Registerer\ViewRegisterer::class,
+        \Iqionly\Laraddon\Registerer\ControllerRegisterer::class,
     ];
 
     protected $addons_path = null;
@@ -26,12 +20,7 @@ class LaraddonServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/laraddon.php', 'laraddon');
 
-        if($this->app->runningUnitTests() && env('PHPUNIT_ADDONS_PATH') != null) {
-            $this->addons_path = realpath(__DIR__ . env('PHPUNIT_ADDONS_PATH'));
-            $this->app->get('config')->set('laraddon.addons_path', $this->addons_path);
-        } else {
-            $this->addons_path = $this->app->get('config')->get('laraddon.addons_path');
-        }
+        $this->determineAddonsPath();
 
         $this->app->singleton(Core::class, function ($app) {
             return new Core($app);
@@ -92,5 +81,15 @@ class LaraddonServiceProvider extends ServiceProvider
 
     private function viewRegisterer(): ViewRegisterer {
         return $this->app->get(ViewRegisterer::class);
+    }
+
+    private function determineAddonsPath(): void
+    {
+        if($this->app->runningUnitTests() && env('PHPUNIT_ADDONS_PATH') != null) {
+            $this->addons_path = realpath(__DIR__ . env('PHPUNIT_ADDONS_PATH'));
+            $this->app->get('config')->set('laraddon.addons_path', $this->addons_path);
+        } else {
+            $this->addons_path = $this->app->get('config')->get('laraddon.addons_path');
+        }
     }
 }

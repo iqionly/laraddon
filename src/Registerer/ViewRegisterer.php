@@ -1,8 +1,10 @@
 <?php
 
-namespace Iqionly\Laraddon;
+namespace Iqionly\Laraddon\Registerer;
 
 use Illuminate\Container\Container;
+use Iqionly\Laraddon\Core;
+use Iqionly\Laraddon\Interfaces\Module;
 
 class ViewRegisterer {
 
@@ -32,7 +34,7 @@ class ViewRegisterer {
         }
 
         foreach ($this->core->getListAvailableModules() as $value) {
-            $this->list_path_view_modules[$value] = $this->path_app_addons . "/$value/". static::VIEW_PATH_MODULE;
+            $this->list_path_view_modules[(string) $value] = $value->getPath() . "/" . static::VIEW_PATH_MODULE;
         }
 
         return $this->list_path_view_modules;

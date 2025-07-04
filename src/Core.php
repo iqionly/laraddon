@@ -9,6 +9,8 @@ use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
+use Iqionly\Laraddon\Bus\Module;
+
 @include_once __DIR__ . '../vendor/autoload.php';
 
 class Core
@@ -69,6 +71,11 @@ class Core
         return $this->folders['addons'];
     }
 
+    /**
+     * Returns a list of available modules.
+     * 
+     * @return array<Module>
+     */
     public function getListAvailableModules()
     {
         if(!empty($this->list_modules)) {
@@ -91,11 +98,12 @@ class Core
 
         // Load all modules
         $loader = new ClassLoader($this->folders['addons']);
+        
         $class_maps = [];
         foreach ($this->list_modules as $module) {
             $normalized_name = Str::slug($module);
             $loader->addPsr4($module . '\\', $this->folders['addons'] . '/' . $normalized_name);
-            $class_maps[] = [
+            $class_maps = [
                 $module . '\\' => $this->folders['addons'] . '/' . $normalized_name
             ];
         }
@@ -103,6 +111,11 @@ class Core
         $loader->addClassMap($class_maps);
         unset($class_maps);
         $loader->register();
+
+        $this->list_modules = [];
+        foreach ($loader->getClassMap() as $class => $path) {
+            $this->list_modules[] = new Module($class, $path);
+        }
 
         return $this->list_modules;
     }

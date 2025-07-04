@@ -1,10 +1,11 @@
 <?php
 
-namespace Iqionly\Laraddon;
+namespace Iqionly\Laraddon\Registerer;
 
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Iqionly\Laraddon\Core;
 use Iqionly\Laraddon\Errors\InitFileNotFound;
 use Iqionly\Laraddon\Errors\InvalidModules;
 use ReflectionClass;
@@ -24,11 +25,14 @@ class RouteRegisterer
 
     public function __construct(Container $app, Core $core)
     {
+        
         $this->core = $core;
         $config = $app->get('config');
         $this->generate_api = $config->get('laraddon.api_routes');
         $this->router = $app->get('router');
-        $this->middleware_groups = array_keys($app->get(\Illuminate\Contracts\Http\Kernel::class)->getMiddlewareGroups()); // P.S : This is not the best way to get middleware groups, so slow -__-
+        tap($app->get(\Illuminate\Contracts\Http\Kernel::class), function (\Illuminate\Foundation\Http\Kernel $tap) {
+            $this->middleware_groups = $tap->getMiddlewareGroups(); // using tap to suppress the error of getMiddlewareGroups() not found
+        });
 
         $this->setExludedRoutes();
     }
@@ -80,16 +84,21 @@ class RouteRegisterer
             /**
              * Step 1.
              */
-            $path = $folders['addons'] . '/' . $value . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+            $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+            // dd($path, $value);
             if(is_dir($path)) {
                 $files = scandir($path);
                 foreach ($files as $file) {
                     if($file == '.' || $file == '..') continue;
                     $file = str_replace('.blade.php', '', $file);
-                    $route = $this->router->addRoute(Router::$verbs[0], Core::camelToUnderscore($value, '-') . '/' . Core::camelToUnderscore($file, '-'), function () use ($file) {
+                    $routePath = "/" . Core::camelToUnderscore($file, '-');
+                    if($file == "index") {
+                        $routePath = '';
+                    }
+                    $route = $this->router->addRoute(Router::$verbs[0], $value . $routePath , function () use ($file) {
                         return view(Core::camelToUnderscore($file, '-'));
                     });
-                    $route->name(Core::camelToUnderscore($value, '-') . '.' . Core::camelToUnderscore($file, '-'));
+                    $route->name($value . '.' . Core::camelToUnderscore($file, '-'));
                 }
             } else {
                 throw new InvalidModules("Views folder not found in $value", 12001);
@@ -98,19 +107,8 @@ class RouteRegisterer
             /**
              * Step 2.
              */
-            try {
-                $data = require $folders['addons'] . '/' . $value . '/init.php';
-            } catch (\ErrorException $e) {
-                throw new InitFileNotFound("Init.php file not found in $value", 12002);
-            }
-            foreach ($data as $key => $item) {
-                if($key == 'controllers') {
-                    foreach ($item as $controller) {
-                        $reflect = new \ReflectionClass($controller);
-                        $this->extractRoute($value, $reflect);
-                    }
-                }
-            }
+            $apth = $value->getPath() . ControllerRegisterer::CONTROLLER_PATH_MODULE;
+
 
             /**
              * Step 3.
