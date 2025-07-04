@@ -33,3 +33,6 @@ workbench:
     - from: storage
       to: workbench/storage
       reverse: true
+    - from: examples
+      to: workbench/addons
+      reverse: true

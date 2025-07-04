@@ -10,6 +10,7 @@
          beStrictAboutOutputDuringTests="true"
          displayDetailsOnPhpunitDeprecations="true"
          failOnPhpunitDeprecation="true"
+         displayDetailsOnSkippedTests="true"
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
@@ -31,5 +32,6 @@
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
         <env name="PHPUNIT_ADDONS_PATH" value="/../examples"/>
+        <env name="TESTBENCH_WORKING_PATH" value="/../tests"/>
     </php>
 </phpunit>
