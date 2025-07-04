@@ -26,14 +26,16 @@ class LaraddonServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->configuration();
-
         $this->registerClasses();
     }
     
     public function boot(): void
     {
+        $this->loadViewsFrom(__DIR__.'/../views', 'laraddon');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
+        $this->extendView(); // This need to change to a more dynamic way to register views from addons, like database saved paths
         $this->initClasses();
-        $this->extendView();
     }
 
     /**
@@ -59,15 +61,16 @@ class LaraddonServiceProvider extends ServiceProvider
      * 
      */
     private function initClasses() {
-        foreach ($this->deferClasses as $class) {
-            $this->app->get($class)->init();
-        }
-
-        foreach ($this->classes as $class) {
+        foreach (array_merge($this->deferClasses, $this->classes) as $class) {
             $this->app->get($class)->init();
         }
     }
-
+    
+    /**
+     * Register Necessary Classes
+     *
+     * @return void
+     */
     private function registerClasses()
     {
         // Register the Core Class

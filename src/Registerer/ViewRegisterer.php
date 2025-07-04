@@ -8,27 +8,41 @@ use Iqionly\Laraddon\Interfaces\Module;
 
 class ViewRegisterer {
 
+    protected Container $app;
     protected Core $core;
 
-    protected string $path_app_addons = '';
+    protected bool|string $path_app_addons = '';
+
+    /**
+     * @var array<string, string> $list_path_view_modules
+     */
     protected array $list_path_view_modules = [];
 
+    /**
+     * @var string VIEW_PATH_MODULE
+     */
     public const VIEW_PATH_MODULE = 'Views';
     
 
     public function __construct(Container $app, Core $core) {
+        $this->app = $app;
         $this->core = $core;
 
         $this->path_app_addons = $core->getFoldersAddon();
     }
 
-    public function init() {
+    public function init(): self {
         $this->listingPathViewModules();
 
         return $this;
     }
-
-    private function listingPathViewModules() {
+    
+    /**
+     * listingPathViewModules
+     *
+     * @return array<string, string> $list_path_view_modules
+     */
+    private function listingPathViewModules(): array {
         if(!empty($this->list_path_view_modules)) {
             return $this->list_path_view_modules;
         }
@@ -40,7 +54,13 @@ class ViewRegisterer {
         return $this->list_path_view_modules;
     }
 
-    public function listPathViewModules() {
-        return $this->list_path_view_modules;
+        
+    /**
+     * @inheritdoc Iqionly\Laraddon\Registerer\ViewRegisterer::listingPathViewModules
+     * 
+     * @return array<string, string>
+     */
+    public function listPathViewModules(): array {
+        return $this->listingPathViewModules();
     }
 }

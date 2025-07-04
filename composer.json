@@ -28,9 +28,6 @@
         "laravel": {
             "providers": [
                 "Iqionly\\Laraddon\\LaraddonServiceProvider"
-            ],
-            "dont-discover": [
-                "*"
             ]
         },
         "class": "Iqionly\\Laraddon\\Plugin"
@@ -43,6 +40,8 @@
         "illuminate/routing": "^11.45",
         "illuminate/container": "^11.45",
         "illuminate/database": "^11.45",
-        "illuminate/view": "^11.45"
+        "illuminate/view": "^11.45",
+        "composer/composer": "^2.8",
+        "phpstan/phpstan": "^2.1"
     }
 }

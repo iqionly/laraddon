@@ -8,7 +8,6 @@ abstract class Type {
     protected string $query_type = '';
 
     public static function string($column, $length = 255, $default = null) {
-        dd(app(static::class));
         // $stringType = new StringType($column, $length);
         // $stringType->query_type = $column . ' VARCHAR(' . $length . ')';
         // return $stringType;
