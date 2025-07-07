@@ -1,21 +1,58 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Iqionly\Laraddon\Interfaces\Migrations;
 
-use Illuminate\Database\Schema\Blueprint;
-
 abstract class Type {
+
+    /**
+     * Column name
+     *
+     * @var string
+     */
+    protected string $column;
+
+    /**
+     * Column length
+     *
+     * @var int
+     */
+    protected int $length;
+
+    /**
+     * Column name
+     *
+     * @var string
+     */
     protected string $query_type = '';
 
-    public static function string($column, $length = 255, $default = null) {
-        // $stringType = new StringType($column, $length);
-        // $stringType->query_type = $column . ' VARCHAR(' . $length . ')';
-        // return $stringType;
+    public function __construct(string $column, int $length = 255) {
+        $this->column = $column;
+        $this->length = $length;
     }
-
-    public static function integer($column) {
-        // $integerType = new IntegerType($column);
-        // $integerType->query_type = $column . ' INT';
-        // return $integerType;
+    
+    /**
+     * Type string
+     *
+     * @param  string $column
+     * @param  int $length
+     * @param  string $default
+     * @return StringType
+     */
+    public static function string(string $column, int $length = 255, string $default = ''): StringType {
+        $stringType = new StringType($column, $length);
+        $stringType->query_type = $column . ' VARCHAR(' . $length . ')';
+        return $stringType;
+    }
+    
+    /**
+     * Type integer
+     *
+     * @param  string  $column
+     * @return IntegerType
+     */
+    public static function integer(string $column): IntegerType {
+        $integerType = new IntegerType($column);
+        $integerType->query_type = $column . ' INT';
+        return $integerType;
     }
 }

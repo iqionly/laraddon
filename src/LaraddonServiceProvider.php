@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Iqionly\Laraddon;
 
@@ -10,17 +10,26 @@ use Iqionly\Laraddon\Debugs\Profiler;
 
 class LaraddonServiceProvider extends ServiceProvider
 {
+    /**
+     * @var array<int, string> $deferClasses
+     */
     private array $deferClasses = [
         \Iqionly\Laraddon\Core::class,
         \Iqionly\Laraddon\Debugs\Profiler::class,
     ];
 
+    /**
+     * @var array<int, string> $classes
+     */
     private array $classes = [
         \Iqionly\Laraddon\Registerer\RouteRegisterer::class,
         \Iqionly\Laraddon\Registerer\ViewRegisterer::class,
         \Iqionly\Laraddon\Registerer\ControllerRegisterer::class,
     ];
 
+    /**
+     * @var string|null $addons_path
+     */
     protected $addons_path = null;
 
     public function register(): void
@@ -102,8 +111,13 @@ class LaraddonServiceProvider extends ServiceProvider
     private function determineAddonsPath(): void
     {
         if($this->app->runningUnitTests() && env('PHPUNIT_ADDONS_PATH') != null) {
-            $this->addons_path = realpath(__DIR__ . env('PHPUNIT_ADDONS_PATH'));
-            $this->app->get('config')->set('laraddon.addons_path', $this->addons_path);
+            $path = realpath(__DIR__ . env('PHPUNIT_ADDONS_PATH'));
+            if($path === false) {
+                throw new \ErrorException('Invalid addons path provided for PHPUnit tests.');
+            }
+            $this->addons_path = $path;
+            $this->app->get('config')->set('laraddon.addons_path', $path);
+            unset($path);
         } else {
             $this->addons_path = $this->app->get('config')->get('laraddon.addons_path');
         }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Iqionly\Laraddon;
 
@@ -9,6 +7,7 @@ use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
@@ -25,13 +24,13 @@ class Core
     protected string $addons_path;
     protected string $addons_name;
     /**
-     * @var array<string, bool|string> $folders
+     * @var array<string, string> $folders
      */
     protected array $folders = [
-        'addons' => false,
+        'addons' => '',
     ];
     /**
-     * @var array<int, string> $list_modules
+     * @var array<int, Module> $list_modules
      */
     protected array $list_modules = [];
 
@@ -40,12 +39,12 @@ class Core
      * This is move to Core because many classes need to access this
      * @var array<int, string> $middleware_groups
      */
-    public static array $middleware_groups = [];
-    public static bool $generate_api = false;
+    public array $middleware_groups = [];
+    public bool $generate_api = false;
     /**
      * @var array<int, string> $excluded_routes
      */
-    public static array $excluded_routes = [];
+    public array $excluded_routes = [];
 
     public function __construct(Container $app)
     {
@@ -71,22 +70,21 @@ class Core
     }
 
     private function setRouteVariables(): void {
-        /** @var \Illuminate\Foundation\Http\Kernel $kernel */
-        $kernel = $this->app->get(Kernel::class);
+        $router = $this->app->get(Router::class);
 
-        self::$middleware_groups = array_keys($kernel->getMiddlewareGroups());
-        self::$generate_api = $this->app->get('config')->get('laraddon.api_routes');
+        $this->middleware_groups = array_keys($router->getMiddlewareGroups());
+        $this->generate_api = $this->app->get('config')->get('laraddon.api_routes');
 
-        if(!self::$generate_api) {
-            self::$middleware_groups = array_filter(self::$middleware_groups, function ($val) {
+        if(!$this->generate_api) {
+            $this->middleware_groups = array_filter($this->middleware_groups, function ($val) {
                 return $val != 'api';
             });
         }
-        self::$excluded_routes = self::setExludedRoutes();
+        $this->excluded_routes = $this->setExludedRoutes();
 
         // Exlude default routes abtract laravel controller 
-        self::$middleware_groups = array_filter(self::$middleware_groups, function ($val){
-            return !in_array($val, self::$excluded_routes);
+        $this->middleware_groups = array_filter($this->middleware_groups, function ($val){
+            return !in_array($val, $this->excluded_routes);
         });
     }
 
@@ -98,9 +96,9 @@ class Core
      * This ensures that default Laravel controller methods are excluded
      * from being registered as routes.
      *
-     * @return array
+     * @return array<int, string> $excluded_routes
      */
-    public static function setExludedRoutes(): array {
+    public function setExludedRoutes(): array {
         $laravelController = new ReflectionClass(\Illuminate\Routing\Controller::class);
         $methods = $laravelController->getMethods(ReflectionMethod::IS_PUBLIC);
         $excluded_routes = [];
@@ -142,33 +140,38 @@ class Core
     /**
      * Returns a list of available modules.
      * 
-     * @return array<Module> $list_modules
+     * @return array<int, string> $list_modules
      */
     public function getListAvailableModules()
     {
-        if(!empty($this->list_modules)) {
-            return $this->list_modules;
-        }
-
-        $this->list_modules = array_diff(
+        $list_modules = array_diff(
             scandir($this->folders['addons'], SCANDIR_SORT_NONE),
             ['.', '..']
         );
 
-        $this->list_modules = array_values($this->list_modules);
+        $list_modules = array_values($list_modules);
 
-        return $this->list_modules;
+        return $list_modules;
     }
-
+    
+    /**
+     * Load and initialize all modules if not loaded.
+     *
+     * @return array<int, Module> $list_modules
+     */
     private function loadModules() {
+        if(!empty($this->list_modules)) {
+            return $this->list_modules;
+        }
+
         // Get list available module
-        $this->getListAvailableModules();
+        $list_modules = $this->getListAvailableModules();
 
         // Load all modules
         $loader = new ClassLoader($this->folders['addons']);
         
         $class_maps = [];
-        foreach ($this->list_modules as $module) {
+        foreach ($list_modules as $module) {
             $normalized_name = Str::slug($module);
             $loader->addPsr4($this->addons_name . '\\' . $module . '\\', $this->folders['addons'] . '/' . $normalized_name);
             $class_maps = [
@@ -179,7 +182,6 @@ class Core
         $loader->addClassMap($class_maps);
         unset($class_maps);
 
-        $this->list_modules = [];
         foreach ($loader->getClassMap() as $class => $path) {
             $this->list_modules[] = new Module($class, $path);
         }
@@ -190,20 +192,38 @@ class Core
     /**
      * Get listed module
      *
-     * @return array<Module>
+     * @return array<int, Module> $list_modules
      */
     public static function getListModules() {
         return App::get(self::class)->list_modules;
     }
-
+    
+    /**
+     * Get All Folders Available in module client
+     *
+     * @return array<string, bool|string> $folders
+     */
     public static function getFolders() {
         return App::get(self::class)->folders;
     }
-
-    public static function camelToUnderscore($string, $us = "_") {
+    
+    /**
+     * camelToUnderscore
+     *
+     * @param  string $string
+     * @param  string $us
+     * @return string
+     */
+    public static function camelToUnderscore(string $string, string $us = "_") {
         return strtolower(preg_replace('/(?<!^)[A-Z]+|(?<!^|\d)[\d]+/', $us.'$0', $string));
     }
-
+    
+    /**
+     * removeParenthesis
+     *
+     * @param  string $string
+     * @return string
+     */
     public static function removeParenthesis($string) {
         return preg_replace('/[\(\)\{\}\[\]]+/', '', $string);
     }

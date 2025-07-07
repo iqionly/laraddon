@@ -1,10 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Iqionly\Laraddon\Registerer;
 
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Iqionly\Laraddon\Attributes\HasRoutes;
 use Iqionly\Laraddon\Core;
 use Iqionly\Laraddon\Errors\InvalidModules;
 use ReflectionClass;
@@ -13,14 +14,14 @@ use ReflectionNamedType;
 
 class RouteRegisterer
 {
+    use HasRoutes;
+    
     protected Core $core;
     protected ControllerRegisterer $controller_registerer;
 
     protected \Illuminate\Routing\Router $router;
     protected \Illuminate\View\Factory $view;
     
-    protected array $middleware_groups = [];
-    public array $excluded_routes = [];
 
     public function __construct(Container $app, Core $core)
     {
@@ -30,20 +31,24 @@ class RouteRegisterer
         $this->router = $app->get('router');
         $this->view = $app->get('view');
 
-        $this->middleware_groups = Core::$middleware_groups;
-        $this->excluded_routes = Core::$excluded_routes;
+        $this->middleware_groups = $core->middleware_groups;
+        $this->excluded_routes = $core->excluded_routes;
         $this->controller_registerer = $app->get(ControllerRegisterer::class);
     }
 
-    public function init() {
+    public function init(): self {
         $this->registerRoutes();
 
         return $this;
     }
-
-    public function registerRoutes() {
+    
+    /**
+     * Register all route views, controllers, models
+     *
+     * @return void
+     */
+    public function registerRoutes(): void {
         $list_modules = Core::getListModules();
-        $folders = Core::getFolders();
         // Get List Modules
         foreach ($list_modules as $value) {
             /**
@@ -64,8 +69,7 @@ class RouteRegisterer
             /**
              * Step 1.
              */
-
-             $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+            $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
             if(is_dir($path)) {
                 $files = array_diff(scandir($path), ['.', '..']);
                 foreach ($files as $file) {

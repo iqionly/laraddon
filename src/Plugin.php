@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Iqionly\Laraddon;
 
@@ -27,15 +27,27 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             ScriptEvents::POST_UPDATE_CMD  => 'onPostInstall'
         ];
     }
-
-    public static function onPostInstall(Event $event)
+    
+    /**
+     * Tun this after install or update packages complete
+     *
+     * @param  Event $event
+     * @return void
+     */
+    public static function onPostInstall(Event $event): void
     {
         $io = $event->getIO();
         $composerFile = getcwd() . '/composer.json';
 
         $io->write("<info>🔧 Laraddon Plugin: Adding PSR-4 autoload for TestModule...</info>");
 
-        $composerData = json_decode(file_get_contents($composerFile), true);
+        $contents = file_get_contents($composerFile);
+        if($contents === false) {
+            $io->write("<error>❌ Failed to read composer.json file.</error>");
+            return;
+        }
+
+        $composerData = json_decode($contents, true);
 
         $autoload = &$composerData['autoload']['psr-4'];
 
