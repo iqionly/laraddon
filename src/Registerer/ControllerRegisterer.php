@@ -3,6 +3,9 @@
 namespace Iqionly\Laraddon\Registerer;
 
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
 use ErrorException;
 
 use Illuminate\Container\Container;
@@ -13,9 +16,6 @@ use Iqionly\Laraddon\Attributes\HasRoutes;
 use Iqionly\Laraddon\Core;
 use Iqionly\Laraddon\Errors\InvalidModules;
 use Iqionly\Laraddon\Interfaces\Module;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionParameter;
 
 class ControllerRegisterer {
 
