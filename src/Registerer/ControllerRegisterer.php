@@ -108,9 +108,6 @@ class ControllerRegisterer {
             $uri = str_replace('_', '-', $attribute[$method]);
             foreach ($parameters as $param) {
                 $type = $param->getType();
-                if(empty($type)) {
-                    throw new ErrorException("Parameter type is not defined in method $name_method in class " . $reflect->getName());
-                }
 
                 if($type instanceof ReflectionNamedType && $type->getName() != Request::class)
                     $uri .= "/{" . strtolower($param->getName()) . "}";
