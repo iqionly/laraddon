@@ -34,7 +34,6 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "version": "dev-main",
     "require-dev": {
         "illuminate/support": "^11.45",
         "illuminate/routing": "^11.45",
