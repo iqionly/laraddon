@@ -9,14 +9,14 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Iqionly\\Laraddon\\": "src/",
+            "Laraddon\\": "src/",
             "Laraddon\\Attributes\\": "src/Attributes/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Iqionly\\Laraddon\\ExampleAddon\\": "examples/ExampleAddon/",
-            "Iqionly\\Laraddon\\Tests\\": "tests/"
+            "Laraddon\\ExampleAddon\\": "examples/ExampleAddon/",
+            "Laraddon\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -27,10 +27,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Iqionly\\Laraddon\\LaraddonServiceProvider"
+                "Laraddon\\LaraddonServiceProvider"
             ]
         },
-        "class": "Iqionly\\Laraddon\\Plugin"
+        "class": "Laraddon\\Plugin"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
