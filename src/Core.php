@@ -2,29 +2,31 @@
 
 namespace Laraddon;
 
-use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
-
 use Laraddon\Bus\Module;
+use Laraddon\Interfaces\Initiable;
+
 use ReflectionClass;
 use ReflectionMethod;
 
-class Core
+class Core implements Initiable
 {
     protected Application $app;
 
     protected string $addons_path;
     protected string $addons_name;
+
     /**
      * @var array<string, string> $folders
      */
     protected array $folders = [
         'addons' => '',
     ];
+
     /**
      * @var array<int, Module> $list_modules
      */
@@ -45,12 +47,25 @@ class Core
     public function __construct(Application $app)
     {
         $this->app = $app;
-        /** @var Application $foundation */
-        $foundation = $app->get('app');
         /** @var Repository $config */
         $config = $app->get('config');
-        $this->addons_path = $foundation->basePath($config->get('laraddon.addons_path'));
+        /** @var Router $router */
+        $router = $this->app->get(Router::class);
+        $config_addon_path = $config->get('laraddon.addons_path');
+        $config_api_routes = $config->get('laraddon.api_routes');
+
+        if(!is_string($config_addon_path)) {
+            throw new \ErrorException("Configuration 'laraddon.addons_path' must be a string.", 10001);
+        }
+
+        if(!is_bool($config_api_routes)) {
+            throw new \ErrorException("Configuration 'laraddon.api_routes' must be a boolean.", 10002);
+        }
+
+        $this->generate_api = $config_api_routes;
+        $this->addons_path = $this->app->basePath($config_addon_path);
         $this->addons_name = ucwords(basename($this->addons_path)); // Different from consumer class, we just use Laraddon/Loaded
+        $this->middleware_groups = array_keys($router->getMiddlewareGroups());
     }
 
     public function init(): self
@@ -66,11 +81,6 @@ class Core
     }
 
     private function setRouteVariables(): void {
-        $router = $this->app->get(Router::class);
-
-        $this->middleware_groups = array_keys($router->getMiddlewareGroups());
-        $this->generate_api = $this->app->get('config')->get('laraddon.api_routes');
-
         if(!$this->generate_api) {
             $this->middleware_groups = array_filter($this->middleware_groups, function ($val) {
                 return $val != 'api';
@@ -163,8 +173,9 @@ class Core
         // Get list available module
         $list_modules = $this->getListAvailableModules();
 
+        
         // Load all modules
-        $loader = new ClassLoader($this->folders['addons']);
+        $loader = new \Composer\Autoload\ClassLoader($this->folders['addons']);
         
         $class_maps = [];
         foreach ($list_modules as $module) {
@@ -174,10 +185,10 @@ class Core
                 $this->addons_name . '\\' . $module . '\\' => $this->folders['addons'] . '/' . $normalized_name
             ];
         }
-
+        
         $loader->addClassMap($class_maps);
         unset($class_maps);
-
+        
         foreach ($loader->getClassMap() as $class => $path) {
             $this->list_modules[] = new Module($class, $path);
         }
@@ -191,7 +202,11 @@ class Core
      * @return array<int, Module> $list_modules
      */
     public static function getListModules() {
-        return App::get(self::class)->list_modules;
+        $result = App::get(self::class);
+        if(!$result instanceof self) {
+            throw new \ErrorException("Core class not initialized properly.", 10003);
+        }
+        return $result->list_modules;
     }
     
     /**
@@ -200,7 +215,11 @@ class Core
      * @return array<string, bool|string> $folders
      */
     public static function getFolders() {
-        return App::get(self::class)->folders;
+        $result = App::get(self::class);
+        if(!$result instanceof self) {
+            throw new \ErrorException("Core class not initialized properly.", 10004);
+        }
+        return $result->folders;
     }
     
     /**
@@ -211,7 +230,10 @@ class Core
      * @return string
      */
     public static function camelToUnderscore(string $string, string $us = "_") {
-        return strtolower(preg_replace('/(?<!^)[A-Z]+|(?<!^|\d)[\d]+/', $us.'$0', $string));
+        if($replaced = preg_replace('/(?<!^)[A-Z]+|(?<!^|\d)[\d]+/', $us.'$0', $string)) {
+            return strtolower($replaced);
+        }
+        return $string;
     }
     
     /**
@@ -221,6 +243,9 @@ class Core
      * @return string
      */
     public static function removeParenthesis($string) {
-        return preg_replace('/[\(\)\{\}\[\]]+/', '', $string);
+        if($replaced = preg_replace('/[\(\)\{\}\[\]]+/', '', $string)) {
+            return $replaced;
+        }
+        return $string;
     }
 }

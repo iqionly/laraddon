@@ -6,8 +6,9 @@ use Illuminate\Routing\RouteCollectionInterface;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\View;
 use Laraddon\Core;
+use Laraddon\Interfaces\Initiable;
 
-class Profiler
+class Profiler implements Initiable
 {
     protected Router $router;
     protected Core $core;
@@ -24,11 +25,13 @@ class Profiler
     /**
      * Initialize Class
      *
-     * @return void
+     * @return self
      */
-    public function init(): void
+    public function init(): self
     {
         $this->routes = $this->router->getRoutes();
+
+        return $this;
     }
     
     /**

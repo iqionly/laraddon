@@ -2,18 +2,24 @@
 
 namespace Laraddon\Interfaces;
 
+use Error;
+use ErrorException;
 use Laraddon\Core;
 
 abstract class Module {
     protected string $path;
+
+    protected string $base;
+
+    protected string $name;
+
+    protected bool $api_routes = false;
     
     /**
      * @var array<string, mixed> $attributes
      */
     protected array $attributes = [
-        'base' => '',
         'routes' => [],
-        'api_routes' => false,
         'middleware_scopes' => [],
     ];
     protected string $class;
@@ -33,7 +39,7 @@ abstract class Module {
      * @return string
      */
     public function __toString(): string {
-        return $this->attributes['base'];
+        return $this->base;
     }
     
     /**
@@ -47,11 +53,16 @@ abstract class Module {
     
     /**
      * getName
+     * 
+     * @throws Error The module not have name
      *
      * @return string
      */
     public function getName(): string {
-        return preg_replace('/[^a-zA-Z0-9_\.\-]/', '', $this->attributes['base']);
+        if($name = preg_replace('/[^a-zA-Z0-9_\.\-]/', '', $this->base)) {
+            return $name;
+        }
+        throw new Error("No name for module", 10100);
     }
     
     /**
@@ -81,7 +92,7 @@ abstract class Module {
      */
     public function getApiRoutesAttribute(): bool
     {
-        return $this->attributes['api_routes'] ?? false;
+        return $this->api_routes ?? false;
     }
     
     /**
@@ -90,11 +101,14 @@ abstract class Module {
      * @return void
      */
     private function setAttributes(): void {
-        $this->attributes['base'] = '/' . Core::camelToUnderscore(basename($this->class), '-');
+        $this->base = '/' . Core::camelToUnderscore(basename($this->class), '-');
 
         if (file_exists($this->path . '/init.php')) {
             $mergeAttribute = require_once $this->path . '/init.php';
-            $this->attributes = array_merge($this->attributes, $mergeAttribute);
+            foreach(array_diff_assoc($mergeAttribute, $this->attributes) as $ka => $va) {
+                $this->{$ka} = $va;
+            }
+            $this->attributes = array_diff_assoc($this->attributes, $mergeAttribute);
         }
     }
 }

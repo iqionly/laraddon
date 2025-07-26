@@ -2,15 +2,12 @@
 
 namespace Laraddon\Registerer;
 
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
-use Laraddon\Attributes\Routes\HasRoutes;
 use Laraddon\Core;
+use Laraddon\Interfaces\Initiable;
 
-class RouteRegisterer extends Registerer
-{
-    use HasRoutes;
-    
+class RouteRegisterer extends Registerer implements Initiable
+{   
     private ControllerRegisterer $controller_registerer;
     private ViewRegisterer $view_registerer;
 

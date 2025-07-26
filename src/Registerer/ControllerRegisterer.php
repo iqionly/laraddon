@@ -12,9 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Laraddon\Core;
 use Laraddon\Errors\InvalidModules;
+use Laraddon\Interfaces\Initiable;
 use Laraddon\Interfaces\Module;
 
-class ControllerRegisterer extends Registerer
+class ControllerRegisterer extends Registerer implements Initiable
 {
     public const string CONTROLLER_PATH_MODULE = 'Controllers';
 
@@ -41,7 +42,7 @@ class ControllerRegisterer extends Registerer
                 }
             }
         } else {
-            throw new InvalidModules("Views folder not found in $module", 12001);
+            throw new InvalidModules("Views folder not found in $module", 13001);
         }
     }
     
@@ -80,7 +81,7 @@ class ControllerRegisterer extends Registerer
             
             $method = array_key_first($attribute);
             if(!is_string($method)) {
-                throw new ErrorException("Method is not string");
+                throw new ErrorException("Method is not string", 13002);
             }
             $uri = str_replace('_', '-', $attribute[$method]);
             foreach ($parameters as $param) {

@@ -47,7 +47,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             return;
         }
 
-        $composerData = json_decode($contents, true);
+        /** @var non-empty-array<string, array> $composerData */
+        $composerData = json_decode($contents, true, 2, JSON_THROW_ON_ERROR);
 
         $autoload = &$composerData['autoload']['psr-4'];
 
@@ -55,7 +56,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             $autoload['Addons\\'] = 'addons/';
             file_put_contents($composerFile, json_encode($composerData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
             $io->write("<info>✅ PSR-4 namespace 'Addons\\' added.</info>");
-        } else {
+    } else {
             $io->write("<comment>ℹ️ PSR-4 'Addons\\' already exists, skipping.</comment>");
         }
 

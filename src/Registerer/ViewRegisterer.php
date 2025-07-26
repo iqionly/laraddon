@@ -2,18 +2,14 @@
 
 namespace Laraddon\Registerer;
 
-use Error;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
-use Illuminate\View\ViewFinderInterface;
-use Laraddon\Attributes\Routes\HasRoutes;
+use Laraddon\Bus\Module;
 use Laraddon\Core;
 use Laraddon\Errors\InvalidModules;
+use Laraddon\Interfaces\Initiable;
 
-class ViewRegisterer extends Registerer {
-
-    use HasRoutes;
+class ViewRegisterer extends Registerer implements Initiable
+{
 
     /**
      * @var array<string, string> $list_path_view_modules
@@ -78,8 +74,17 @@ class ViewRegisterer extends Registerer {
         });
     }
 
-    public function registerRoute($value) {
-        $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+    /**
+     * Register to route laravel
+     * 
+     * @param Module &$module
+     * 
+     * @throws InvalidModules Error when Views Folder doesn't exists in consumer project
+     * 
+     * @return void
+     */
+    public function registerRoute(Module $module): void {
+        $path = $module->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
         if(is_dir($path)) {
             $files = array_diff(scandir($path), ['.', '..']);
             foreach ($files as $file) {
@@ -88,13 +93,13 @@ class ViewRegisterer extends Registerer {
                 if($file == "index") {
                     $routePath = '';
                 }
-                $route = $this->router->addRoute(Router::$verbs[0], $value . $routePath, function (...$args) use ($file) {
+                $route = $this->router->addRoute(Router::$verbs[0], $module . $routePath, function (...$args) use ($file) {
                     return $this->view->make(Core::camelToUnderscore($file, '-'), $args);
                 });
-                $route->name($value->getName() . '.' . Core::camelToUnderscore($file, '-'));
+                $route->name($module->getName() . '.' . Core::camelToUnderscore($file, '-'));
             }
         } else {
-            throw new InvalidModules("Views folder not found in $value", 12001);
+            throw new InvalidModules("Views folder not found in $module", 12001);
         }
     }
 }
