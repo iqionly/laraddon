@@ -48,7 +48,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
 
         /** @var non-empty-array<string, array> $composerData */
-        $composerData = json_decode($contents, true, 2, JSON_THROW_ON_ERROR);
+        $composerData = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 
         /** @var non-empty-array<string, mixed> $autoload */
         $autoload = &$composerData['autoload']['psr-4'];
