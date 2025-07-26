@@ -1,6 +1,6 @@
 <?php
 
-namespace Iqionly\Laraddon\ExampleAddon\Models;
+namespace Laraddon\ExampleAddon\Models;
 
 class AddonTestRelationModel extends \Illuminate\Database\Eloquent\Model
 {

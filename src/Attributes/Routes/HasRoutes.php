@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Attributes;
+namespace Laraddon\Attributes\Routes;
 
 /**
  * 

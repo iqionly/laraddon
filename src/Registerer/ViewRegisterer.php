@@ -1,16 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Registerer;
+namespace Laraddon\Registerer;
 
+use Error;
 use Illuminate\Container\Container;
-use Iqionly\Laraddon\Core;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Routing\Router;
+use Illuminate\View\ViewFinderInterface;
+use Laraddon\Attributes\Routes\HasRoutes;
+use Laraddon\Core;
+use Laraddon\Errors\InvalidModules;
 
-class ViewRegisterer {
+class ViewRegisterer extends Registerer {
 
-    protected Container $app;
-    protected Core $core;
-
-    protected bool|string $path_app_addons = '';
+    use HasRoutes;
 
     /**
      * @var array<string, string> $list_path_view_modules
@@ -21,17 +24,10 @@ class ViewRegisterer {
      * @var string VIEW_PATH_MODULE
      */
     public const VIEW_PATH_MODULE = 'Views';
-    
-
-    public function __construct(Container $app, Core $core) {
-        $this->app = $app;
-        $this->core = $core;
-
-        $this->path_app_addons = $core->getFoldersAddon();
-    }
 
     public function init(): self {
         $this->listingPathViewModules();
+        $this->extendView();
 
         return $this;
     }
@@ -61,5 +57,44 @@ class ViewRegisterer {
      */
     public function listPathViewModules(): array {
         return $this->listingPathViewModules();
+    }
+
+    /**
+     * Extend View Finder to register views from addons
+     *
+     * @return void
+     */
+    public function extendView(): void
+    {
+        $this->app->extend($this->view::class, function (\Illuminate\View\Factory $view) {
+            // This is temporary to register views of base addon
+            // We need to auto add location base of addons folder listed
+            // we don't put this in config file, read it from database and cached to php files
+
+            $registerer = $this->app->get(ViewRegisterer::class);
+            foreach ($registerer->listPathViewModules() as $key => $value) {
+                $view->getFinder()->addLocation($value);
+            }
+        });
+    }
+
+    public function registerRoute($value) {
+        $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
+        if(is_dir($path)) {
+            $files = array_diff(scandir($path), ['.', '..']);
+            foreach ($files as $file) {
+                $file = str_replace('.blade.php', '', $file);
+                $routePath = "/" . Core::camelToUnderscore($file, '-');
+                if($file == "index") {
+                    $routePath = '';
+                }
+                $route = $this->router->addRoute(Router::$verbs[0], $value . $routePath, function (...$args) use ($file) {
+                    return $this->view->make(Core::camelToUnderscore($file, '-'), $args);
+                });
+                $route->name($value->getName() . '.' . Core::camelToUnderscore($file, '-'));
+            }
+        } else {
+            throw new InvalidModules("Views folder not found in $value", 12001);
+        }
     }
 }

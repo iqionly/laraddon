@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Registerer;
+namespace Laraddon\Registerer;
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -8,38 +8,15 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ErrorException;
 
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Iqionly\Laraddon\Attributes\HasRoutes;
-use Iqionly\Laraddon\Core;
-use Iqionly\Laraddon\Errors\InvalidModules;
-use Iqionly\Laraddon\Interfaces\Module;
+use Laraddon\Core;
+use Laraddon\Errors\InvalidModules;
+use Laraddon\Interfaces\Module;
 
-class ControllerRegisterer {
-
-    use HasRoutes;
-
+class ControllerRegisterer extends Registerer
+{
     public const string CONTROLLER_PATH_MODULE = 'Controllers';
-
-    protected Container $app;
-    protected Core $core;
-
-    protected \Illuminate\Routing\Router $router;
-    protected \Illuminate\View\Factory $view;
-
-    public function __construct(Container $app, Core $core) {
-        $this->app = $app;
-        $this->core = $core;
-
-        $this->router = $app->get('router');
-        $this->view = $app->get('view');
-
-        $this->middleware_groups = $core->middleware_groups;
-        $this->generate_api = $core->generate_api;
-        $this->excluded_routes = $core->excluded_routes;
-    }
 
     public function init(): self {
         return $this;

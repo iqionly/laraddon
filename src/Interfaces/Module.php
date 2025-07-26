@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Interfaces;
+namespace Laraddon\Interfaces;
 
-use Iqionly\Laraddon\Core;
+use Laraddon\Core;
 
 abstract class Module {
     protected string $path;

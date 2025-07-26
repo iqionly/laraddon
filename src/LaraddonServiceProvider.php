@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon;
+namespace Laraddon;
 
+use Error;
+use Exception;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\ViewFinderInterface;
-use Iqionly\Laraddon\Registerer\ViewRegisterer;
-use Iqionly\Laraddon\Debugs\Profiler;
+use Laraddon\Registerer\ViewRegisterer;
+use Laraddon\Debugs\Profiler;
 
 class LaraddonServiceProvider extends ServiceProvider
 {
@@ -14,17 +18,17 @@ class LaraddonServiceProvider extends ServiceProvider
      * @var array<int, string> $deferClasses
      */
     private array $deferClasses = [
-        \Iqionly\Laraddon\Core::class,
-        \Iqionly\Laraddon\Debugs\Profiler::class,
+        \Laraddon\Core::class,
+        \Laraddon\Debugs\Profiler::class,
     ];
 
     /**
      * @var array<int, string> $classes
      */
     private array $classes = [
-        \Iqionly\Laraddon\Registerer\RouteRegisterer::class,
-        \Iqionly\Laraddon\Registerer\ViewRegisterer::class,
-        \Iqionly\Laraddon\Registerer\ControllerRegisterer::class,
+        \Laraddon\Registerer\ViewRegisterer::class,
+        \Laraddon\Registerer\ControllerRegisterer::class,
+        \Laraddon\Registerer\RouteRegisterer::class,
     ];
 
     /**
@@ -43,7 +47,6 @@ class LaraddonServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../views', 'laraddon');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
-        $this->extendView(); // This need to change to a more dynamic way to register views from addons, like database saved paths
         $this->initClasses();
     }
 
@@ -70,9 +73,19 @@ class LaraddonServiceProvider extends ServiceProvider
      * 
      */
     private function initClasses() {
-        foreach (array_merge($this->deferClasses, $this->classes) as $class) {
-            $this->app->get($class)->init();
-        }
+        $this->app->booted(function() {
+            foreach (array_merge($this->deferClasses, $this->classes) as $class) {
+                try{
+                    $this->app->get($class)->init();
+                } catch (Error $e) {
+                    // if it fails to initialize, run in safemode or like laravel normal system
+                    $this->app->get('log')->error("Error initializing class: {$class}", [
+                        'message' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
+        });
     }
     
     /**
@@ -83,11 +96,9 @@ class LaraddonServiceProvider extends ServiceProvider
     private function registerClasses()
     {
         // Register the Core Class
-        $this->app->singleton(Core::class, function ($app) {
-            return new Core($app);
-        });
+        $this->app->instance(Core::class, new Core($this->app));
 
-        $this->app->singleton(Profiler::class, function (Container $app) {
+        $this->app->singleton(Profiler::class, function (Application $app) {
             return new Profiler($app->get('router'), $app->get(Core::class));
         });
 
@@ -97,15 +108,6 @@ class LaraddonServiceProvider extends ServiceProvider
                 return new $class($app, $app->get(Core::class));
             });
         }
-    }
-    
-    /**
-     * Get ViewRegisterer instance
-     *
-     * @return ViewRegisterer
-     */
-    private function getViewRegisterer(): ViewRegisterer {
-        return $this->app->get(ViewRegisterer::class);
     }
 
     private function determineAddonsPath(): void
@@ -121,25 +123,5 @@ class LaraddonServiceProvider extends ServiceProvider
         } else {
             $this->addons_path = $this->app->get('config')->get('laraddon.addons_path');
         }
-    }
-    
-    /**
-     * Extend View Finder to register views from addons
-     *
-     * @return void
-     */
-    private function extendView(): void
-    {
-        $this->app->extend('view.finder', function (ViewFinderInterface $file_view_finder) {
-            // This is temporary to register views of base addon
-            // We need to auto add location base of addons folder listed
-            // we don't put this in config file, read it from database and cached to php files
-
-            $registerer = $this->getViewRegisterer();
-            foreach ($registerer->listPathViewModules() as $key => $value) {
-                $file_view_finder->addLocation($value);
-            }
-            return $file_view_finder;
-        });
     }
 }

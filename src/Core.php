@@ -1,25 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon;
+namespace Laraddon;
 
-use Illuminate\Container\Container;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
-use Iqionly\Laraddon\Bus\Module;
+use Laraddon\Bus\Module;
 use ReflectionClass;
 use ReflectionMethod;
 
-@include_once __DIR__ . '../vendor/autoload.php';
-
 class Core
 {
-    protected Container $app;
+    protected Application $app;
 
     protected string $addons_path;
     protected string $addons_name;
@@ -46,7 +42,7 @@ class Core
      */
     public array $excluded_routes = [];
 
-    public function __construct(Container $app)
+    public function __construct(Application $app)
     {
         $this->app = $app;
         /** @var Application $foundation */

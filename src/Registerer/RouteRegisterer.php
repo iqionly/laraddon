@@ -1,41 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Registerer;
+namespace Laraddon\Registerer;
 
 use Illuminate\Container\Container;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Router;
-use Iqionly\Laraddon\Attributes\HasRoutes;
-use Iqionly\Laraddon\Core;
-use Iqionly\Laraddon\Errors\InvalidModules;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
+use Illuminate\Contracts\Foundation\Application;
+use Laraddon\Attributes\Routes\HasRoutes;
+use Laraddon\Core;
 
-class RouteRegisterer
+class RouteRegisterer extends Registerer
 {
     use HasRoutes;
     
-    protected Core $core;
-    protected ControllerRegisterer $controller_registerer;
+    private ControllerRegisterer $controller_registerer;
+    private ViewRegisterer $view_registerer;
 
-    protected \Illuminate\Routing\Router $router;
-    protected \Illuminate\View\Factory $view;
-    
-
-    public function __construct(Container $app, Core $core)
+    public function __construct(Application $app, Core $core)
     {
-        
-        $this->core = $core;
-        $config = $app->get('config');
-        $this->router = $app->get('router');
-        $this->view = $app->get('view');
+        parent::__construct($app, $core);
 
-        $this->middleware_groups = $core->middleware_groups;
-        $this->excluded_routes = $core->excluded_routes;
         $this->controller_registerer = $app->get(ControllerRegisterer::class);
+        $this->view_registerer = $app->get(ViewRegisterer::class);
     }
-
+    
     public function init(): self {
         $this->registerRoutes();
 
@@ -69,23 +55,7 @@ class RouteRegisterer
             /**
              * Step 1.
              */
-            $path = $value->getPath() . '/' . ViewRegisterer::VIEW_PATH_MODULE;
-            if(is_dir($path)) {
-                $files = array_diff(scandir($path), ['.', '..']);
-                foreach ($files as $file) {
-                    $file = str_replace('.blade.php', '', $file);
-                    $routePath = "/" . Core::camelToUnderscore($file, '-');
-                    if($file == "index") {
-                        $routePath = '';
-                    }
-                    $route = $this->router->addRoute(Router::$verbs[0], $value . $routePath , function (...$args) use ($file) {
-                        return $this->view->make(Core::camelToUnderscore($file, '-'), $args);
-                    });
-                    $route->name($value->getName() . '.' . Core::camelToUnderscore($file, '-'));
-                }
-            } else {
-                throw new InvalidModules("Views folder not found in $value", 12001);
-            }
+            $this->view_registerer->registerRoute($value);
 
             /**
              * Step 2.

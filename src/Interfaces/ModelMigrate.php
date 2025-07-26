@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Interfaces;
+namespace Laraddon\Interfaces;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Iqionly\Laraddon\Debugs;
+namespace Laraddon\Debugs;
 
 use Illuminate\Routing\RouteCollectionInterface;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\View;
-use Iqionly\Laraddon\Core;
+use Laraddon\Core;
 
 class Profiler
 {

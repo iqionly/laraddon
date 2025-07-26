@@ -1,9 +1,9 @@
 <?php
 
-namespace Iqionly\Laraddon\ExampleAddon\Controllers;
+namespace Laraddon\ExampleAddon\Controllers;
 
 use Illuminate\Routing\Controller;
-use Laraddon\Attributes\Route;
+use Laraddon\Interfaces\Route;
 
 class AddonTestController extends Controller
 {
