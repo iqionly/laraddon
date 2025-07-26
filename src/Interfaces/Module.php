@@ -105,6 +105,9 @@ abstract class Module {
 
         if (file_exists($this->path . '/init.php')) {
             $mergeAttribute = require_once $this->path . '/init.php';
+            if(!is_array($mergeAttribute)) {
+                throw new ErrorException("Module init.php file must return an array", 10101);
+            }
             foreach(array_diff_assoc($mergeAttribute, $this->attributes) as $ka => $va) {
                 $this->{$ka} = $va;
             }

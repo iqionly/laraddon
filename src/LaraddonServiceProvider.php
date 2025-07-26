@@ -114,7 +114,7 @@ class LaraddonServiceProvider extends ServiceProvider
 
         // Register All Classes
         foreach ($this->classes as $class) {
-            $this->app->singleton($class, function ($app) use ($class) {
+            $this->app->singleton($class, function (Application $app) use ($class) {
                 return new $class($app, $app->get(Core::class));
             });
         }

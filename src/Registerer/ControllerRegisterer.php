@@ -83,7 +83,10 @@ class ControllerRegisterer extends Registerer implements Initiable
             if(!is_string($method)) {
                 throw new ErrorException("Method is not string", 13002);
             }
-            $uri = str_replace('_', '-', $attribute[$method]);
+
+            /** @var string $reflectmethod */
+            $reflectmethod = $attribute[$method];
+            $uri = str_replace('_', '-', $reflectmethod);
             foreach ($parameters as $param) {
                 $type = $param->getType();
 
