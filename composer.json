@@ -37,7 +37,7 @@
             "vendor/bin/phpstan analyse --level 7 --configuration=phpstan.neon --no-interaction"
         ]
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
         "illuminate/support": "^11.45",

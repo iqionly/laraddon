@@ -4,14 +4,14 @@ return [
     /**
      * Generate Api Routes
      * 
-     * default: false
+     * default: true
      */
     'api_routes' => env('API_ROUTES', true),
 
     /**
      * Addons path
      * 
-     * default: ./addons
+     * default: ./Addons
      */
-    'addons_path' => env('ADDONS_PATH', 'addons'),
+    'addons_path' => env('ADDONS_PATH', 'Addons'),
 ];

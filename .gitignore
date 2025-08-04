@@ -2,3 +2,4 @@ vendor/
 workbench/
 .phpunit.cache/
 .phplint.cache/
+*.code-workspace
