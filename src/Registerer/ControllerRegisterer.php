@@ -16,7 +16,7 @@ use Laraddon\Interfaces\Module;
 
 class ControllerRegisterer extends Registerer implements Initiable
 {
-    public const string CONTROLLER_PATH_MODULE = 'Controllers';
+    public const CONTROLLER_PATH_MODULE = 'Controllers';
 
     public function init(): self {
         return $this;

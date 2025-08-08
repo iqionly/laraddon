@@ -78,7 +78,7 @@ class LaraddonServiceProvider extends ServiceProvider
         $this->app->booted(function() {
             foreach (array_merge($this->deferClasses, $this->classes) as $class) {
                 try{
-                    $class = $this->app->get($class);
+                    $class = $this->app->make($class);
 
                     if($class instanceof Initiable) {
                         // If the class implements Initiable, call init method
