@@ -48,5 +48,13 @@
         "composer/composer": "^2.8",
         "phpstan/phpstan": "^2.1",
         "illuminate/log": "^11.45"
-    }
+    },
+    "homepage": "https://github.com/iqionly/laraddon",
+    "keywords": [
+        "laravel",
+        "addon",
+        "plugin",
+        "modules",
+        "laravel-addon"
+    ]
 }

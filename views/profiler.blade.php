@@ -53,7 +53,7 @@
                 @if ($route)
                     <li class="list-group-item d-flex justify-content-between align-items-start">
                         <div class="ms-2 me-auto col-7">
-                            <a href="{{ url('/') }}" class="fw-bold">{{ $route->uri() }}</a>
+                            <a href="{{ url($route->uri()) }}" class="fw-bold">{{ $route->uri() }}</a>
                         </div>
                         <div class="col-3">
                             @foreach($route->methods() as $method)

@@ -2,6 +2,8 @@
 
 namespace Laraddon\Debugs;
 
+use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Routing\Route;
 use Illuminate\Routing\RouteCollectionInterface;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\View;
@@ -41,8 +43,18 @@ class Profiler implements Initiable
      */
     public function render()
     {
+        $grouping = [];
+        foreach ($this->routes as $route) {
+            $mapped = [];
+            $uriParts = explode('/', $route->uri());
+            foreach($uriParts as $uriPart) {
+                $mapped[$uriPart] = [];
+            }
+        }
         return View::make('laraddon::profiler', [
             'routes' => $this->routes
         ]);
     }
+
+
 }

@@ -3,15 +3,14 @@
 namespace Laraddon;
 
 use Error;
-use Exception;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Log\LogManager;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\ViewFinderInterface;
-use Laraddon\Registerer\ViewRegisterer;
+use Illuminate\View\Compilers\BladeCompiler;
+use Laraddon\Bus\ApplicationWrapper;
 use Laraddon\Debugs\Profiler;
 use Laraddon\Interfaces\Initiable;
 
@@ -49,7 +48,7 @@ class LaraddonServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../views', 'laraddon');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-
+        
         $this->initClasses();
     }
 
@@ -118,6 +117,11 @@ class LaraddonServiceProvider extends ServiceProvider
                 return new $class($app, $app->get(Core::class));
             });
         }
+
+        Blade::directive('dummyUrl', function ($args) {
+            dd($args);
+            return $this->app->get(Profiler::class)->generateDummyUrl($args);
+        });
     }
 
     private function determineAddonsPath(): void
@@ -140,4 +144,5 @@ class LaraddonServiceProvider extends ServiceProvider
             unset($path);
         }
     }
+
 }

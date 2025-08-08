@@ -8,7 +8,6 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ErrorException;
 
-use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Laraddon\Core;
 use Laraddon\Errors\InvalidModules;
@@ -47,7 +46,7 @@ class ControllerRegisterer extends Registerer implements Initiable
     }
     
     /**
-     * Filter route without excluded routes
+     * Filter route based on excluded routes
      *
      * @param  \ReflectionClass<object> $reflect
      * @return \ReflectionMethod[]
@@ -89,11 +88,14 @@ class ControllerRegisterer extends Registerer implements Initiable
             $uri = str_replace('_', '-', $reflectmethod);
             foreach ($parameters as $param) {
                 $type = $param->getType();
+                if($type && !$type->isBuiltin() && !$this->app->bound($type->getName())) {
+                    $optional = $type->allowsNull() ? '?' : '';
+                    if($type instanceof ReflectionNamedType)
+                        $uri .= "/{" . strtolower($param->getName()) . $optional . "}";
+                    elseif($param instanceof ReflectionParameter)
+                        $uri .= "/{" . strtolower($param->getName()) . $optional . "}";
+                }
 
-                if($type instanceof ReflectionNamedType && $type->getName() != Request::class)
-                    $uri .= "/{" . strtolower($param->getName()) . "}";
-                elseif($param instanceof ReflectionParameter)
-                    $uri .= "/{" . strtolower($param->getName()) . "}";
             }
             foreach ($this->middleware_groups as $groupkey => $group) {
                 // Detect if projects using default middleware api, we will add prefix api
@@ -113,7 +115,7 @@ class ControllerRegisterer extends Registerer implements Initiable
                 $route = $this->router->addRoute(...$result);
                 $route->middleware($group);
                 $route_name = $group == 'api' ? 'api.' : '';
-                $route_name .= Core::camelToUnderscore($name, '-') . '.' . Core::camelToUnderscore($uri, '-');
+                $route_name .= Core::camelToUnderscore($name, '-') . '.' . str_replace('_', '-', $reflectmethod);
                 $route_name = str_replace('/', '.', Core::removeParenthesis($route_name));
                 $route->name($route_name);
             }
