@@ -17,7 +17,7 @@ use Laraddon\Interfaces\Module;
 
 class ControllerRegisterer extends Registerer implements Initiable
 {
-    public const string CONTROLLER_PATH_MODULE = 'Controllers';
+    public const CONTROLLER_PATH_MODULE = 'Controllers';
 
     public function init(): self {
         return $this;
@@ -90,7 +90,9 @@ class ControllerRegisterer extends Registerer implements Initiable
             foreach ($parameters as $param) {
                 $type = $param->getType();
 
-                if($type instanceof ReflectionNamedType && $type->getName() != Request::class)
+                dd($param, $type);
+
+                if($type instanceof ReflectionNamedType)
                     $uri .= "/{" . strtolower($param->getName()) . "}";
                 elseif($param instanceof ReflectionParameter)
                     $uri .= "/{" . strtolower($param->getName()) . "}";

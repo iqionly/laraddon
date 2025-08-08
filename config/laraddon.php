@@ -13,5 +13,5 @@ return [
      * 
      * default: ./Addons
      */
-    'addons_path' => env('ADDONS_PATH', 'Addons'),
+    'addons_path' => env('ADDONS_PATH', 'addons'),
 ];
