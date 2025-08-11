@@ -262,4 +262,14 @@ class Core implements Initiable
         }
         return $string;
     }
+
+    /**
+     * Get the Application instance.
+     *
+     * @return Application
+     */
+    public function getApplication(): Application
+    {
+        return $this->app;
+    }
 }
