@@ -31,17 +31,13 @@ class ControllerRegisterer extends Registerer implements Initiable
         }
 
         $path = $module->getPath() . '/' . self::CONTROLLER_PATH_MODULE;
-        if(is_dir($path)) {
-            $files = array_diff(scandir($path), ['.', '..']);
-            foreach ($files as $file) {
-                $file = str_replace('.php', '', $file);
-                $modulePath = $module->getClass() . '\\' . self::CONTROLLER_PATH_MODULE . '\\' . $file;
-                if(class_exists($modulePath)) {
-                    $this->extractRoute($module->getName(), new \ReflectionClass($modulePath), $module);
-                }
+        $files = array_diff(scandir($path), ['.', '..']);
+        foreach ($files as $file) {
+            $file = str_replace('.php', '', $file);
+            $modulePath = $module->getClass() . '\\' . self::CONTROLLER_PATH_MODULE . '\\' . $file;
+            if(class_exists($modulePath)) {
+                $this->extractRoute($module->getName(), new \ReflectionClass($modulePath), $module);
             }
-        } else {
-            // Nothing todo
         }
     }
     

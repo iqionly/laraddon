@@ -61,7 +61,6 @@ class Core implements Initiable
         if(!is_bool($config_api_routes)) {
             throw new \ErrorException("Configuration 'laraddon.api_routes' must be a boolean.", 10002);
         }
-
         $this->generate_api = $config_api_routes;
         $this->addons_path = $this->app->basePath($config_addon_path);
         $this->addons_name = ucwords(basename($this->addons_path)); // Different from consumer class, we just use Laraddon/Loaded
@@ -179,10 +178,9 @@ class Core implements Initiable
         
         $class_maps = [];
         foreach ($list_modules as $module) {
-            $normalized_name = Str::slug($module);
-            $loader->addPsr4($this->addons_name . '\\' . $module . '\\', $this->folders['addons'] . '/' . $normalized_name);
+            $loader->addPsr4($this->addons_name . '\\' . $module . '\\', $this->folders['addons'] . '/' . $module);
             $class_maps = [
-                $this->addons_name . '\\' . $module . '\\' => $this->folders['addons'] . '/' . $normalized_name
+                $this->addons_name . '\\' . $module . '\\' => $this->folders['addons'] . '/' . $module
             ];
         }
         
