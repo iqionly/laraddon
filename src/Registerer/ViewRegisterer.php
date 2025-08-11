@@ -99,7 +99,7 @@ class ViewRegisterer extends Registerer implements Initiable
                 $route->name($module->getName() . '.' . Core::camelToUnderscore($file, '-'));
             }
         } else {
-            throw new InvalidModules("Views folder not found in $module", 12001);
+            // Nothing to do
         }
     }
 }

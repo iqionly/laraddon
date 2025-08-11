@@ -42,7 +42,7 @@ class ControllerRegisterer extends Registerer implements Initiable
                 }
             }
         } else {
-            throw new InvalidModules("Views folder not found in $module", 13001);
+            // Nothing todo
         }
     }
     

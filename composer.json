@@ -4,7 +4,13 @@
     "type": "composer-plugin",
     "require": {
         "php": "^8.2",
-        "composer-plugin-api": "^2.0"
+        "composer-plugin-api": "^2.0",
+        "illuminate/support": "^11.45",
+        "illuminate/routing": "^11.45",
+        "illuminate/container": "^11.45",
+        "illuminate/database": "^11.45",
+        "illuminate/view": "^11.45",
+        "illuminate/log": "^11.45"
     },
     "license": "MIT",
     "autoload": {
@@ -27,7 +33,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laraddon\\LaraddonServiceProvider"
+                "Laraddon\\LaradGGdonServiceProvider"
             ]
         },
         "class": "Laraddon\\Plugin"
@@ -40,13 +46,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
-        "illuminate/support": "^11.45",
-        "illuminate/routing": "^11.45",
-        "illuminate/container": "^11.45",
-        "illuminate/database": "^11.45",
-        "illuminate/view": "^11.45",
         "composer/composer": "^2.8",
-        "phpstan/phpstan": "^2.1",
-        "illuminate/log": "^11.45"
+        "phpstan/phpstan": "^2.1"
     }
 }

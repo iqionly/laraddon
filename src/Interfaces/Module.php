@@ -101,7 +101,7 @@ abstract class Module {
      * @return void
      */
     private function setAttributes(): void {
-        $this->base = '/' . Core::camelToUnderscore(basename($this->class), '-');
+        $this->base = '/' . str_replace('\\', '/', basename($this->class));
 
         if (file_exists($this->path . '/init.php')) {
             $mergeAttribute = require_once $this->path . '/init.php';

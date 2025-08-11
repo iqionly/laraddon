@@ -227,13 +227,27 @@ class Core implements Initiable
      *
      * @param  string $string
      * @param  string $us
-     * @return string
+     * @return string $string
      */
     public static function camelToUnderscore(string $string, string $us = "_") {
-        if($replaced = preg_replace('/(?<!^)[A-Z]+|(?<!^|\d)[\d]+/', $us.'$0', $string)) {
-            return strtolower($replaced);
+        // Change backslash to slash
+        $string = str_replace('\\', '/', $string);
+    
+        // explode the slash to part
+        $parts = explode('/', $string);
+        foreach ($parts as &$part) {
+            // replace CamelCase to $us param
+            $part = strtolower(
+                preg_replace('/(?<!^)([A-Z])/', $us.'$1', $part)
+            );
+            // If fail return origin string
+            if($part == null) {
+                return $string;
+            }
         }
-        return $string;
+    
+        // Union the arrat parts
+        return implode('/', $parts);
     }
     
     /**

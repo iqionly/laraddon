@@ -70,6 +70,12 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ---
 
+## License
+
+Laraddon is open-sourced software licensed under the MIT license.
+
+---
+
 ## 👏 Inspired By
 
 Laravel Modular Community
