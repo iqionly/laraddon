@@ -79,8 +79,6 @@ class ViewRegisterer extends Registerer implements Initiable
      * 
      * @param Module &$module
      * 
-     * @throws InvalidModules Error when Views Folder doesn't exists in consumer project
-     * 
      * @return void
      */
     public function registerRoute(Module $module): void {

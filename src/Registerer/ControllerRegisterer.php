@@ -2,15 +2,15 @@
 
 namespace Laraddon\Registerer;
 
+use Exception;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
-use ErrorException;
 
 use Illuminate\Routing\Router;
+use Laraddon\Annotated\Route;
 use Laraddon\Core;
-use Laraddon\Errors\InvalidModules;
 use Laraddon\Interfaces\Initiable;
 use Laraddon\Interfaces\Module;
 
@@ -53,6 +53,20 @@ class ControllerRegisterer extends Registerer implements Initiable
             return !in_array($method->getName(), $this->excluded_routes);
         });
     }
+
+    /**
+     * @param \ReflectionNamedType $type
+     * @param string $name
+     * 
+     * @return string
+     */
+    private function extractType(\ReflectionNamedType $type, string $name) {
+        if(!$this->app->bound($type->getName())) {
+            $optional = $type->allowsNull() ? '?' : '';
+            return "/{" . strtolower($name) . $optional . "}";
+        }
+        return '';
+    }
     
     /**
      * Extract route from controller ReflectionClass
@@ -68,34 +82,49 @@ class ControllerRegisterer extends Registerer implements Initiable
             $parameters = $method->getParameters();
             $name_method = $method->getName();
             $attributes = $method->getAttributes();
-            if(count($attributes) == 0) {
-                $attribute = [ 'get' => $name_method ];
-            } else {
-                $attribute = $attributes[0]->getArguments();
+            $attribute = [ 'get' => $name_method ];
+            if($attributes){
+                foreach($attributes as $attr) {
+                    if($attr->getName() != Route::class) {
+                        continue;
+                    }
+
+                    /** @var array<int,string> $values */
+                    $values = array_fill(0, count($attr->getArguments()), $name_method);
+                    
+                    /** @var array<int,string> $keys */
+                    $keys = $attr->getArguments();
+
+                    /** @var array<int,string> $attribute */
+                    $attribute = array_combine($keys, $values);
+                }
             }
             
-            $method = array_key_first($attribute);
-            if(!is_string($method)) {
-                throw new ErrorException("Method is not string", 13002);
-            }
-
-            /** @var string $reflectmethod */
-            $reflectmethod = $attribute[$method];
-            $uri = str_replace('_', '-', $reflectmethod);
-            foreach ($parameters as $param) {
-                $type = $param->getType();
-                if($type && !$type->isBuiltin() && !$this->app->bound($type->getName())) {
-                    $optional = $type->allowsNull() ? '?' : '';
-                    if($type instanceof ReflectionNamedType)
-                        $uri .= "/{" . strtolower($param->getName()) . $optional . "}";
-                    elseif($param instanceof ReflectionParameter)
-                        $uri .= "/{" . strtolower($param->getName()) . $optional . "}";
+            $result_method = [];
+            if(in_array('any', $attribute)) {
+                // Lakukan sekali foreach
+                $result_method = Router::$verbs;
+            } else {
+                foreach ($attribute as $kmethod => $uri) {
+                    if(is_numeric($kmethod)) {
+                        throw new \Exception("Method is numeric, need to be string: get, post, put, etc.", 15200);
+                    }
+                    $result_method[] = strtoupper($kmethod);
                 }
-
+                $result_method[] = 'HEAD';
             }
+
+            $uri = str_replace('_', '-', $name_method);
+            foreach ($parameters as $param) {
+                $paramType = $param->getType();
+                if(!$paramType || class_basename($paramType) == \ReflectionType::class) {
+                    throw new Exception("Type is not ReflectionNamedType", 15201);
+                }
+                $uri .= $this->extractType($paramType, $param->getName());
+            }
+
             foreach ($this->middleware_groups as $groupkey => $group) {
                 // Detect if projects using default middleware api, we will add prefix api
-                $result_method = strtoupper($method);
                 if($method == 'any') {
                     $result_method = Router::$verbs;
                 }
@@ -111,7 +140,7 @@ class ControllerRegisterer extends Registerer implements Initiable
                 $route = $this->router->addRoute(...$result);
                 $route->middleware($group);
                 $route_name = $group == 'api' ? 'api.' : '';
-                $route_name .= Core::camelToUnderscore($name, '-') . '.' . str_replace('_', '-', $reflectmethod);
+                $route_name .= Core::camelToUnderscore($name, '-') . '.' . str_replace('_', '-', $name_method);
                 $route_name = str_replace('/', '.', Core::removeParenthesis($route_name));
                 $route->name($route_name);
             }

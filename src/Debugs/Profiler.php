@@ -43,14 +43,6 @@ class Profiler implements Initiable
      */
     public function render()
     {
-        $grouping = [];
-        foreach ($this->routes as $route) {
-            $mapped = [];
-            $uriParts = explode('/', $route->uri());
-            foreach($uriParts as $uriPart) {
-                $mapped[$uriPart] = [];
-            }
-        }
         return View::make('laraddon::profiler', [
             'routes' => $this->routes
         ]);

@@ -3,6 +3,7 @@
 namespace Laraddon;
 
 use Error;
+use Exception;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Log\LogManager;
@@ -70,7 +71,7 @@ class LaraddonServiceProvider extends ServiceProvider
 
     /**
      * Load All Kernels and bootstrap them
-     *
+     * 
      * @return void
      * 
      */
@@ -79,18 +80,30 @@ class LaraddonServiceProvider extends ServiceProvider
             foreach (array_merge($this->deferClasses, $this->classes) as $class) {
                 try{
                     $class = $this->app->make($class);
-
+                    
                     if($class instanceof Initiable) {
                         // If the class implements Initiable, call init method
                         $class = $class->init();
                     } else {
-                        throw new \ErrorException("There some class is not Initiable.", 11000);
+                        throw new \Exception("There some class is not Initiable.", 10000);
                     }
-                } catch (Error $e) {
+                } catch (\Exception $ex) {
+                    if(!is_object($class)) {
+                        $className = $ex->getFile();
+                    } else {
+                        $className = get_class($class);
+                    }
                     // if it fails to initialize, run in safemode or like laravel normal system
-                    ((object) $this->app->get(LogManager::class))->error("Error initializing class: {$class}", [
-                        'message' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                    ((object) $this->app->get(LogManager::class))->error("Exception ({$ex->getCode()}) initializing class: {$className}", [
+                        'message' => $ex->getMessage(),
+                        'trace' => $ex->getTraceAsString()
+                    ]);
+                } catch (\Error $er) {
+                    $className = $class::class;
+                    // if it fails to initialize, run in safemode or like laravel normal system
+                    ((object) $this->app->get(LogManager::class))->error("Unexpected Error initializing class: {$className}", [
+                        'message' => $er->getMessage(),
+                        'trace' => $er->getTraceAsString()
                     ]);
                 }
             }
@@ -117,20 +130,20 @@ class LaraddonServiceProvider extends ServiceProvider
                 return new $class($app, $app->get(Core::class));
             });
         }
-
-        Blade::directive('dummyUrl', function ($args) {
-            dd($args);
-            return $this->app->get(Profiler::class)->generateDummyUrl($args);
-        });
     }
 
+    /**
+     * @throws \Exception
+     * 
+     * @return void
+     */
     private function determineAddonsPath(): void
     {
         $unit_addon_path = env('PHPUNIT_ADDONS_PATH');
         if($this->app->runningUnitTests() && is_string($unit_addon_path = env('PHPUNIT_ADDONS_PATH'))) {
             $path = realpath(__DIR__ . $unit_addon_path);
             if($path === false) {
-                throw new \ErrorException('Invalid addons path provided for PHPUnit tests.', 11001);
+                throw new \Exception('Invalid addons path provided for PHPUnit tests.', 10001);
             }
             $this->addons_path = $path;
             $this->app->get(Repository::class)->set('laraddon.addons_path', $path);
@@ -138,7 +151,7 @@ class LaraddonServiceProvider extends ServiceProvider
         } else {
             $path = $this->app->get(Repository::class)->get('laraddon.addons_path');
             if(!is_string($path)) {
-                throw new \ErrorException("Configuration 'laraddon.addons_path' must be a string.", 11002);
+                throw new \Exception("Configuration 'laraddon.addons_path' must be a string.", 10002);
             }
             $this->addons_path = $path;
             unset($path);

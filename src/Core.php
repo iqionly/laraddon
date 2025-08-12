@@ -6,7 +6,6 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Str;
 use Laraddon\Bus\Module;
 use Laraddon\Interfaces\Initiable;
 
@@ -44,6 +43,13 @@ class Core implements Initiable
      */
     public array $excluded_routes = [];
 
+    /**
+     * @param Application $app
+     * 
+     * @throws \Exception
+     * 
+     * @return void
+     */
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -55,11 +61,11 @@ class Core implements Initiable
         $config_api_routes = $config->get('laraddon.api_routes');
 
         if(!is_string($config_addon_path)) {
-            throw new \ErrorException("Configuration 'laraddon.addons_path' must be a string.", 10001);
+            throw new \Exception("Configuration 'laraddon.addons_path' must be a string.", 10050);
         }
 
         if(!is_bool($config_api_routes)) {
-            throw new \ErrorException("Configuration 'laraddon.api_routes' must be a boolean.", 10002);
+            throw new \Exception("Configuration 'laraddon.api_routes' must be a boolean.", 10051);
         }
         $this->generate_api = $config_api_routes;
         $this->addons_path = $this->app->basePath($config_addon_path);
@@ -196,13 +202,15 @@ class Core implements Initiable
     
     /**
      * Get listed module
+     * 
+     * @throws \Exception
      *
      * @return array<int, Module> $list_modules
      */
     public static function getListModules() {
         $result = App::get(self::class);
         if(!$result instanceof self) {
-            throw new \ErrorException("Core class not initialized properly.", 10003);
+            throw new \Exception("Core class not initialized properly.", 10052);
         }
         return $result->list_modules;
     }
@@ -210,12 +218,14 @@ class Core implements Initiable
     /**
      * Get All Folders Available in module client
      *
+     * @throws \Exception
+     * 
      * @return array<string, bool|string> $folders
      */
     public static function getFolders() {
         $result = App::get(self::class);
         if(!$result instanceof self) {
-            throw new \ErrorException("Core class not initialized properly.", 10004);
+            throw new \Exception("Core class not initialized properly.", 10053);
         }
         return $result->folders;
     }
@@ -235,9 +245,11 @@ class Core implements Initiable
         $parts = explode('/', $string);
         foreach ($parts as &$part) {
             // replace CamelCase to $us param
-            $part = strtolower(
-                preg_replace('/(?<!^)([A-Z])/', $us.'$1', $part)
-            );
+            $replace = preg_replace('/(?<!^)([A-Z])/', $us.'$1', $part);
+            if(!is_string($replace)) {
+                return $part;
+            }
+            $part = strtolower($replace);
             // If fail return origin string
             if($part == null) {
                 return $string;

@@ -2,10 +2,6 @@
 
 namespace Laraddon\Interfaces;
 
-use Error;
-use ErrorException;
-use Laraddon\Core;
-
 abstract class Module {
     protected string $path;
 
@@ -54,7 +50,7 @@ abstract class Module {
     /**
      * getName
      * 
-     * @throws Error The module not have name
+     * @throws \Exception The module not have name
      *
      * @return string
      */
@@ -62,7 +58,7 @@ abstract class Module {
         if($name = preg_replace('/[^a-zA-Z0-9_\.\-]/', '', $this->base)) {
             return $name;
         }
-        throw new Error("No name for module", 10100);
+        throw new \Exception("No name for module", 10100);
     }
     
     /**
@@ -106,7 +102,7 @@ abstract class Module {
         if (file_exists($this->path . '/init.php')) {
             $mergeAttribute = require_once $this->path . '/init.php';
             if(!is_array($mergeAttribute)) {
-                throw new ErrorException("Module init.php file must return an array", 10101);
+                throw new \Exception("Module init.php file must return an array", 10101);
             }
             foreach(array_diff_assoc($mergeAttribute, $this->attributes) as $ka => $va) {
                 $this->{$ka} = $va;

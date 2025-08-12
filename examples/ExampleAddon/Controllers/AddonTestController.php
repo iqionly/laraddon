@@ -3,7 +3,8 @@
 namespace Laraddon\ExampleAddon\Controllers;
 
 use Illuminate\Routing\Controller;
-use Laraddon\Interfaces\Route;
+use Laraddon\Annotated\Method;
+use Laraddon\Annotated\Route;
 
 class AddonTestController extends Controller
 {
@@ -27,7 +28,7 @@ class AddonTestController extends Controller
      * @return string
      * 
      */
-    #[Route(any: 'test_route_attribute')]
+    #[Route(Method::ANY)]
     public function test_route_attribute()
     {
         return 'Hello from Addon Test Controller';
