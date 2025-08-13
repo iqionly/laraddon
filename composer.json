@@ -4,13 +4,7 @@
     "type": "composer-plugin",
     "require": {
         "php": "^8.2",
-        "composer-plugin-api": "^2.0",
-        "illuminate/support": "^11.45",
-        "illuminate/routing": "^11.45",
-        "illuminate/container": "^11.45",
-        "illuminate/database": "^11.45",
-        "illuminate/view": "^11.45",
-        "illuminate/log": "^11.45"
+        "composer-plugin-api": "^2.0"
     },
     "license": "MIT",
     "autoload": {
@@ -33,7 +27,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laraddon\\LaradGGdonServiceProvider"
+                "Laraddon\\LaraddonServiceProvider"
             ]
         },
         "class": "Laraddon\\Plugin"
@@ -47,7 +41,13 @@
     "prefer-stable": true,
     "require-dev": {
         "composer/composer": "^2.8",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "illuminate/support": "^11.45",
+        "illuminate/routing": "^11.45",
+        "illuminate/container": "^11.45",
+        "illuminate/database": "^11.45",
+        "illuminate/view": "^11.45",
+        "illuminate/log": "^11.45"
     },
     "homepage": "https://github.com/iqionly/laraddon",
     "keywords": [

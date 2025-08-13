@@ -8,12 +8,12 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Log\LogManager;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\Compilers\BladeCompiler;
-use Laraddon\Bus\ApplicationWrapper;
+use Laraddon\Bus\ModelMigrate;
 use Laraddon\Debugs\Profiler;
 use Laraddon\Interfaces\Initiable;
+use Laraddon\Registerer\ModuleRegisterer;
+use Symfony\Component\Filesystem\Filesystem;
 
 class LaraddonServiceProvider extends ServiceProvider
 {
@@ -23,6 +23,7 @@ class LaraddonServiceProvider extends ServiceProvider
     private array $deferClasses = [
         \Laraddon\Core::class,
         \Laraddon\Debugs\Profiler::class,
+        \Laraddon\Bus\ModelMigrate::class,
     ];
 
     /**
@@ -117,11 +118,16 @@ class LaraddonServiceProvider extends ServiceProvider
      */
     private function registerClasses()
     {
+
         // Register the Core Class
         $this->app->instance(Core::class, new Core($this->app));
 
         $this->app->singleton(Profiler::class, function (Application $app) {
             return new Profiler($app->get(Router::class), $app->get(Core::class));
+        });
+
+        $this->app->bind(ModelMigrate::class, function (Application $app) {
+            return new ModuleRegisterer($app->get(Core::class));
         });
 
         // Register All Classes

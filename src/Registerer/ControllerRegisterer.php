@@ -101,7 +101,7 @@ class ControllerRegisterer extends Registerer implements Initiable
             }
             
             $result_method = [];
-            if(in_array('any', $attribute)) {
+            if(array_key_exists('any', $attribute)) {
                 // Lakukan sekali foreach
                 $result_method = Router::$verbs;
             } else {
@@ -117,8 +117,8 @@ class ControllerRegisterer extends Registerer implements Initiable
             $uri = str_replace('_', '-', $name_method);
             foreach ($parameters as $param) {
                 $paramType = $param->getType();
-                if(!$paramType || class_basename($paramType) == \ReflectionType::class) {
-                    throw new Exception("Type is not ReflectionNamedType", 15201);
+                if(!$paramType || !is_a($paramType, \ReflectionNamedType::class, true)) {
+                    throw new \Exception("Param need to be ReflectionNamedType.", 15201);
                 }
                 $uri .= $this->extractType($paramType, $param->getName());
             }
