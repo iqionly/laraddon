@@ -120,24 +120,6 @@ class Core implements Initiable
     }
 
 
-    /**
-     * Check if folder addons exist, if not creating
-     *
-     * @param string $path
-     * 
-     * @return bool
-     * 
-     */
-    private function checkFolderAddons(string $path) {
-        if(!is_dir($path)) {
-            mkdir($path, 0700, true);
-        }
-
-        $this->folders['addons'] = $path;
-
-        return true;
-    }
-
     public function getFoldersAddon(): bool|string {
         if(!empty($this->folders['addons'])) {
             return $this->folders['addons'];
@@ -165,6 +147,46 @@ class Core implements Initiable
         return $list_modules;
     }
     
+    /**
+     * Get listed module
+     * 
+     * @throws \Exception
+     *
+     * @return array<int, Module> $list_modules
+     */
+    public static function getListModules() {
+        $result = App::get(self::class);
+        if(!$result instanceof self) {
+            throw new \Exception("Core class not initialized properly.", 10052);
+        }
+        return $result->list_modules;
+    }
+    
+    /**
+     * Get All Folders Available in module client
+     *
+     * @throws \Exception
+     * 
+     * @return array<string, bool|string> $folders
+     */
+    public static function getFolders() {
+        $result = App::get(self::class);
+        if(!$result instanceof self) {
+            throw new \Exception("Core class not initialized properly.", 10053);
+        }
+        return $result->folders;
+    }
+
+    /**
+     * Get the Application instance.
+     *
+     * @return Application
+     */
+    public function getApplication(): Application
+    {
+        return $this->app;
+    }
+
     /**
      * Load and initialize all modules if not loaded.
      *
@@ -198,36 +220,6 @@ class Core implements Initiable
         }
 
         return $this->list_modules;
-    }
-    
-    /**
-     * Get listed module
-     * 
-     * @throws \Exception
-     *
-     * @return array<int, Module> $list_modules
-     */
-    public static function getListModules() {
-        $result = App::get(self::class);
-        if(!$result instanceof self) {
-            throw new \Exception("Core class not initialized properly.", 10052);
-        }
-        return $result->list_modules;
-    }
-    
-    /**
-     * Get All Folders Available in module client
-     *
-     * @throws \Exception
-     * 
-     * @return array<string, bool|string> $folders
-     */
-    public static function getFolders() {
-        $result = App::get(self::class);
-        if(!$result instanceof self) {
-            throw new \Exception("Core class not initialized properly.", 10053);
-        }
-        return $result->folders;
     }
     
     /**
@@ -274,12 +266,20 @@ class Core implements Initiable
     }
 
     /**
-     * Get the Application instance.
+     * Check if folder addons exist, if not creating
      *
-     * @return Application
+     * @param string $path
+     * 
+     * @return bool
+     * 
      */
-    public function getApplication(): Application
-    {
-        return $this->app;
+    private function checkFolderAddons(string $path) {
+        if(!is_dir($path)) {
+            mkdir($path, 0700, true);
+        }
+
+        $this->folders['addons'] = $path;
+
+        return true;
     }
 }
