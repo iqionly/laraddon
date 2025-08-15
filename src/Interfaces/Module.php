@@ -2,6 +2,8 @@
 
 namespace Laraddon\Interfaces;
 
+use Laraddon\Core;
+
 abstract class Module {
     protected string $path;
 
@@ -26,6 +28,7 @@ abstract class Module {
      * @return void
      */
     public function __construct(string $class, string $path) {
+        $this->name = Core::camelToUnderscore(class_basename($class));
         $this->class = rtrim($class, '\\');
         $this->path = $path;
         $this->setAttributes();
@@ -97,8 +100,7 @@ abstract class Module {
      * @return void
      */
     private function setAttributes(): void {
-        $this->base = '/' . str_replace('\\', '/', basename($this->class));
-
+        $this->base = '/' . str_replace('\\', '/', class_basename($this->class));
         if (file_exists($this->path . '/init.php')) {
             $mergeAttribute = require_once $this->path . '/init.php';
             if(!is_array($mergeAttribute)) {
