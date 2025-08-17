@@ -207,9 +207,7 @@ class Core implements Initiable
         $class_maps = [];
         foreach ($list_modules as $module) {
             $loader->addPsr4($this->addons_name . '\\' . $module . '\\', $this->folders['addons'] . '/' . $module);
-            $class_maps = [
-                $this->addons_name . '\\' . $module . '\\' => $this->folders['addons'] . '/' . $module
-            ];
+            $class_maps[$this->addons_name . '\\' . $module . '\\'] = $this->folders['addons'] . '/' . $module;
         }
         
         $loader->addClassMap($class_maps);

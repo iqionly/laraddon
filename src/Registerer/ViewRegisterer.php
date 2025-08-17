@@ -3,6 +3,7 @@
 namespace Laraddon\Registerer;
 
 use Illuminate\Routing\Router;
+use Illuminate\View\FileViewFinder;
 use Laraddon\Bus\Module;
 use Laraddon\Core;
 use Laraddon\Errors\InvalidModules;
@@ -62,16 +63,15 @@ class ViewRegisterer extends Registerer implements Initiable
      */
     public function extendView(): void
     {
-        $this->app->extend($this->view::class, function (\Illuminate\View\Factory $view) {
-            // This is temporary to register views of base addon
-            // We need to auto add location base of addons folder listed
-            // we don't put this in config file, read it from database and cached to php files
-
-            $registerer = $this->app->get(ViewRegisterer::class);
-            foreach ($registerer->listPathViewModules() as $key => $value) {
-                $view->getFinder()->addLocation($value);
-            }
-        });
+        $view = $this->app->get('view');
+        // This is temporary to register views of base addon
+        // We need to auto add location base of addons folder listed
+        // we don't put this in config file, read it from database and cached to php files
+        
+        $registerer = $this->app->get(ViewRegisterer::class);
+        foreach ($registerer->listPathViewModules() as $key => $value) {
+            $view->getFinder()->addNamespace($registerer->getNameSpaceView($key), $value);
+        }
     }
 
     /**
@@ -100,4 +100,14 @@ class ViewRegisterer extends Registerer implements Initiable
             // Nothing to do
         }
     }
+    
+    /**
+     * Get the namespace of view
+     *
+     * @param  mixed $name
+     * @return string
+     */
+    public static function getNameSpaceView(string $name): string {
+        return Core::camelToUnderscore(basename($name), '-');
+    } 
 }
