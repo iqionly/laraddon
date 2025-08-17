@@ -83,3 +83,7 @@ Laravel Modular Community
 Odoo Framework
 
 ---
+
+## Need Examples?
+
+Try this project laravel [ITaskManager](https://github.com/iqionly/itaskmanager), this example has builtin addons folder just change `composer.json` in `repositories.iqionly/laraddon.url` to this laraddon repo or your local laraddon if you already cloning it (sorry this package is still in dev, so you need to manually clone this package first to your computer).
