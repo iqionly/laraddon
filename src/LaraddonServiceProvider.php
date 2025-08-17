@@ -8,6 +8,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Log\LogManager;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Laraddon\Bus\ModelMigrate;
 use Laraddon\Debugs\Profiler;
@@ -22,14 +23,13 @@ class LaraddonServiceProvider extends ServiceProvider
      */
     private array $deferClasses = [
         \Laraddon\Core::class,
-        \Laraddon\Debugs\Profiler::class,
-        \Laraddon\Bus\ModelMigrate::class,
     ];
 
     /**
      * @var array<int, string> $classes
      */
     private array $classes = [
+        \Laraddon\Registerer\ModuleRegisterer::class,
         \Laraddon\Registerer\ViewRegisterer::class,
         \Laraddon\Registerer\ControllerRegisterer::class,
         \Laraddon\Registerer\RouteRegisterer::class,
@@ -48,8 +48,11 @@ class LaraddonServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
+        Blade::componentNamespace('Laraddon\\Views\\Components', 'laraddon');
+        
         $this->loadViewsFrom(__DIR__.'/../views', 'laraddon');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
         
         $this->initClasses();
     }
@@ -124,10 +127,6 @@ class LaraddonServiceProvider extends ServiceProvider
 
         $this->app->singleton(Profiler::class, function (Application $app) {
             return new Profiler($app->get(Router::class), $app->get(Core::class));
-        });
-
-        $this->app->bind(ModelMigrate::class, function (Application $app) {
-            return new ModuleRegisterer($app->get(Core::class));
         });
 
         // Register All Classes

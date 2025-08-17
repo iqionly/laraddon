@@ -2,9 +2,11 @@
     "name": "iqionly/laraddon",
     "description": "Laravel with support addons features",
     "type": "composer-plugin",
+    "version": "0.1.0",
     "require": {
         "php": "^8.2",
-        "composer-plugin-api": "^2.0"
+        "composer-plugin-api": "^2.0",
+        "doctrine/dbal": "^4.3"
     },
     "license": "MIT",
     "autoload": {
@@ -34,20 +36,20 @@
     },
     "scripts": {
         "phpstan": [
-            "vendor/bin/phpstan analyse --level 7 --configuration=phpstan.neon --no-interaction"
+            "vendor/bin/phpstan analyse --no-interaction"
         ]
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
-        "composer/composer": "^2.8",
-        "phpstan/phpstan": "^2.1",
-        "illuminate/support": "^11.45",
-        "illuminate/routing": "^11.45",
-        "illuminate/container": "^11.45",
-        "illuminate/database": "^11.45",
-        "illuminate/view": "^11.45",
-        "illuminate/log": "^11.45"
+        "composer/composer": "^2.8.10",
+        "phpstan/phpstan": "^2.1.22",
+        "illuminate/support": "^11.45.2",
+        "illuminate/routing": "^11.45.2",
+        "illuminate/container": "^11.45.2",
+        "illuminate/database": "^11.45.2",
+        "illuminate/view": "^11.45.2",
+        "illuminate/log": "^11.45.2"
     },
     "homepage": "https://github.com/iqionly/laraddon",
     "keywords": [

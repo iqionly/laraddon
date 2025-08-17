@@ -36,7 +36,6 @@ final class Module extends ModuleInterface
             $this->createDir($pathModels);
             $files = $this->finder->name('/\.php$/')->in($pathModels);
             foreach ($files as $file) {
-                // ltrim($file->getPath(), $pathModels)
                 $this->models[rtrim($file->getRelativePathname(), '.php')] = $file->getPathname();
             }
         } catch (Exception $e) {
@@ -44,7 +43,12 @@ final class Module extends ModuleInterface
         }
     }
 
-    protected function loadModels()
+    public function getModels(): array
+    {
+        return $this->models;
+    }
+
+    protected function loadModels(): void
     {
         
     }
